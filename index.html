@@ -1,0 +1,2509 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>901 Akkim — Depo Yönetim Sistemi</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { min-height:100vh; }
+
+/* LAUNCHER */
+.launcher {
+  display:none; min-height:100vh;
+  background: linear-gradient(135deg,#f0f4ff 0%,#f9f4ff 50%,#fff4f0 100%);
+  flex-direction:column; align-items:center; justify-content:center;
+  font-family:'Syne',sans-serif;
+}
+.launcher.active { display:flex; }
+.launcher-logo {
+  width:60px; height:60px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  border-radius:18px; display:flex; align-items:center; justify-content:center;
+  font-size:28px; margin-bottom:22px;
+  box-shadow:0 8px 28px rgba(37,99,235,.22);
+}
+.launcher h1 { font-size:30px; font-weight:800; letter-spacing:-1px; color:#181c2e; text-align:center; line-height:1.2; }
+.launcher-sub { font-size:14px; color:#788096; margin-top:8px; margin-bottom:48px; text-align:center; }
+.app-cards { display:flex; gap:20px; }
+.app-card {
+  width:230px; background:white; border:1.5px solid #e4e7ef;
+  border-radius:20px; padding:30px 24px; cursor:pointer;
+  transition:all .22s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 2px 12px rgba(0,0,0,.06); text-align:center; user-select:none;
+}
+.app-card:hover { transform:translateY(-7px); }
+.app-card:nth-child(1):hover { box-shadow:0 14px 40px rgba(37,99,235,.18); border-color:#93c5fd; }
+.app-card:nth-child(2):hover { box-shadow:0 14px 40px rgba(124,58,237,.18); border-color:#c4b5fd; }
+.card-icon { width:54px; height:54px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 16px; }
+.card-icon.blue { background:#eff4ff; }
+.card-icon.purple { background:#f5f3ff; }
+.app-card h3 { font-size:15px; font-weight:700; color:#181c2e; margin-bottom:6px; }
+.app-card p { font-size:12px; color:#788096; line-height:1.5; }
+.card-arrow { margin-top:18px; font-size:18px; color:#b2b9cc; transition:all .2s; }
+.app-card:hover .card-arrow { transform:translateX(4px); }
+.app-card:nth-child(1):hover .card-arrow { color:#2563eb; }
+.app-card:nth-child(2):hover .card-arrow { color:#7c3aed; }
+
+.app-shell { display:none; flex-direction:column; min-height:100vh; }
+.app-shell.active { display:flex; }
+
+.nav-back-btn {
+  padding:6px 13px; border-radius:8px; border:1px solid #e4e7ef;
+  background:white; color:#788096; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.nav-back-btn:hover { color:#181c2e; border-color:#788096; }
+.nav-switch-btn {
+  padding:6px 13px; border-radius:8px; border:1px solid #bfdbfe;
+  background:#eff4ff; color:#2563eb; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.nav-switch-btn:hover { background:#2563eb; color:white; border-color:#2563eb; }
+
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface2: #f0f1f4;
+    --border: #e2e5ec;
+    --border2: #d0d4de;
+    --adr-color: #e05c2a;
+    --adr-light: #fdf0ea;
+    --adr-border: #f5c4ab;
+    --normal-color: #1e9e60;
+    --normal-light: #eaf7f1;
+    --normal-border: #a8dfc3;
+    --text: #1a1e2e;
+    --text-muted: #7a839a;
+    --text-light: #b0b8cc;
+    --accent: #3a6fd8;
+    --accent-light: #eef2fc;
+    --danger: #d93a5a;
+    --danger-light: #fdf0f3;
+    --shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Syne',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  .page { display:none; min-height:100vh; flex-direction:column; }
+  .page.active { display:flex; }
+
+  /* HEADER */
+  .app-header {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:0 32px; height:60px; display:flex; align-items:center;
+    justify-content:space-between; flex-shrink:0;
+  }
+  .logo { display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+  .logo-icon {
+    width:32px; height:32px;
+    background:linear-gradient(135deg,var(--adr-color) 0%,var(--accent) 100%);
+    border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+  .logo-text { font-size:16px; font-weight:800; letter-spacing:-0.3px; }
+  .logo-text span { color:var(--accent); }
+  .header-right { display:flex; align-items:center; gap:10px; }
+  .chip {
+    font-family:'IBM Plex Mono',monospace; font-size:11px;
+    padding:5px 11px; border-radius:20px; border:1px solid; font-weight:500;
+  }
+  .chip.adr { color:var(--adr-color); border-color:var(--adr-border); background:var(--adr-light); }
+  .chip.normal { color:var(--normal-color); border-color:var(--normal-border); background:var(--normal-light); }
+  .chip.date { color:var(--text-muted); border-color:var(--border2); background:var(--surface2); }
+
+  /* ── HOME ── */
+  .home-body {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:40px 24px;
+  }
+  .home-hero { text-align:center; margin-bottom:40px; }
+  .home-hero h1 { font-size:36px; font-weight:800; letter-spacing:-1.5px; line-height:1.1; }
+  .home-hero h1 span { color:var(--accent); }
+  .home-hero p { margin-top:10px; color:var(--text-muted); font-size:15px; line-height:1.6; }
+
+  .calendar-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; padding:28px; width:100%; max-width:480px;
+    box-shadow:var(--shadow-md);
+  }
+  .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .cal-title { font-size:16px; font-weight:700; }
+  .cal-nav { display:flex; gap:6px; }
+  .cal-nav button {
+    width:32px; height:32px; border-radius:8px; border:1px solid var(--border2);
+    background:var(--surface2); color:var(--text); font-size:18px; cursor:pointer;
+    transition:all .15s; display:flex; align-items:center; justify-content:center;
+  }
+  .cal-nav button:hover { background:var(--accent); color:white; border-color:var(--accent); }
+  .cal-weekdays { display:grid; grid-template-columns:32px repeat(7,1fr); margin-bottom:6px; }
+  .cal-weekday { text-align:center; font-size:10px; font-weight:600; color:var(--text-muted); padding:4px 0; font-family:'IBM Plex Mono',monospace; }
+  .cal-grid { display:grid; grid-template-columns:32px repeat(7,1fr); gap:3px; }
+  .cal-week-num { display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:9px; font-weight:600; color:var(--text-light); background:var(--surface2); border-radius:6px; cursor:default; }
+  .cal-day {
+    aspect-ratio:1; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:600; cursor:pointer; transition:all .15s;
+    position:relative; border:1.5px solid transparent;
+  }
+  .cal-day:hover { background:var(--accent-light); color:var(--accent); }
+  .cal-day.today { border-color:var(--accent); color:var(--accent); }
+  .cal-day.selected { background:var(--accent); color:white; border-color:var(--accent); }
+  .cal-day.has-data::after {
+    content:''; position:absolute; bottom:3px; left:50%; transform:translateX(-50%);
+    width:4px; height:4px; border-radius:50%; background:var(--accent);
+  }
+  .cal-day.selected.has-data::after { background:rgba(255,255,255,0.7); }
+  .cal-day.past { color:var(--text-light); }
+  .cal-day.past:hover { background:var(--surface2); color:var(--text-muted); }
+  .cal-day.empty { cursor:default; pointer-events:none; }
+  .cal-footer { margin-top:22px; display:flex; align-items:center; justify-content:space-between; }
+  .selected-date-label { font-size:12px; color:var(--text-muted); }
+  .selected-date-label strong { color:var(--text); display:block; font-size:15px; margin-top:2px; }
+  .btn-open {
+    padding:11px 22px; background:var(--accent); color:white; border:none;
+    border-radius:10px; font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
+    cursor:pointer; transition:all .2s; box-shadow:0 2px 8px rgba(58,111,216,.25);
+  }
+  .btn-open:hover { background:#2d5abf; transform:translateY(-1px); box-shadow:0 4px 14px rgba(58,111,216,.35); }
+  .btn-open:disabled { background:var(--border2); color:var(--text-light); box-shadow:none; cursor:default; transform:none; }
+
+  .home-stats { display:flex; gap:12px; margin-top:22px; width:100%; max-width:480px; }
+  .stat-card {
+    flex:1; background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:16px; text-align:center; box-shadow:var(--shadow);
+  }
+  .stat-card .num { font-size:28px; font-weight:800; letter-spacing:-1px; font-family:'IBM Plex Mono',monospace; }
+  .stat-card .lbl { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .stat-card.adr .num { color:var(--adr-color); }
+  .stat-card.normal .num { color:var(--normal-color); }
+  .stat-card.total .num { color:var(--accent); }
+
+  /* ── SCHEDULE ── */
+  .schedule-body {
+    flex:1; display:grid; grid-template-columns:1fr 1fr; overflow:hidden;
+  }
+  .ramp-col { display:flex; flex-direction:column; border-right:1px solid var(--border); overflow:hidden; }
+  .ramp-col:last-child { border-right:none; }
+  .ramp-head {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:16px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+  }
+  .ramp-label { display:flex; align-items:center; gap:8px; }
+  .ramp-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .ramp-head h2 { font-size:14px; font-weight:700; }
+  .ramp-meta { font-size:10px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; margin-top:1px; }
+  .ramp-count { text-align:right; font-family:'IBM Plex Mono',monospace; }
+  .ramp-count .big { font-size:20px; font-weight:700; line-height:1; }
+  .ramp-count .small { font-size:10px; color:var(--text-muted); }
+
+  .timeline {
+    flex:1; overflow-y:auto; padding:12px;
+    scrollbar-width:thin; scrollbar-color:var(--border2) transparent;
+  }
+  .timeline::-webkit-scrollbar { width:4px; }
+  .timeline::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+  .slot {
+    display:flex; align-items:stretch; margin-bottom:5px;
+    border-radius:10px; overflow:hidden; border:1px solid var(--border);
+    cursor:pointer; transition:all .18s; background:var(--surface);
+    box-shadow:var(--shadow); min-height:56px;
+  }
+  .slot:hover { border-color:var(--accent); box-shadow:0 2px 12px rgba(58,111,216,.12); transform:translateX(2px); }
+  .slot.booked { cursor:default; }
+  .slot.booked:hover { transform:none; box-shadow:var(--shadow); }
+  .slot.past-slot { opacity:.35; filter:grayscale(.3); }
+  .slot.past-slot:hover { opacity:.45; }
+
+  .slot-time-col {
+    width:68px; flex-shrink:0; background:var(--surface2);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--text-muted);
+    padding:6px 4px; text-align:center; line-height:1.5; gap:1px;
+  }
+  .slot-time-col .t-start { font-size:12px; font-weight:500; color:var(--text); }
+  .slot-time-col .t-sep { color:var(--border2); font-size:10px; }
+  .slot-time-col .t-end { font-size:11px; }
+
+  .slot-body { flex:1; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+
+  .slot.empty:hover .slot-body { background:var(--accent-light); }
+  .empty-hint { font-size:12px; color:var(--text-light); }
+  .plus-btn {
+    width:26px; height:26px; border-radius:50%; border:1.5px dashed var(--border2);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px; color:var(--text-light); transition:all .15s; flex-shrink:0;
+  }
+  .slot.empty:hover .plus-btn { border-color:var(--accent); color:var(--accent); background:white; }
+
+  .slot.booked-adr { border-color:var(--adr-border); }
+  .slot.booked-adr .slot-body { background:var(--adr-light); border-left:3px solid var(--adr-color); }
+  .slot.booked-adr .slot-time-col { background:#fdf5f1; }
+  .slot.booked-normal { border-color:var(--normal-border); }
+  .slot.booked-normal .slot-body { background:var(--normal-light); border-left:3px solid var(--normal-color); }
+  .slot.booked-normal .slot-time-col { background:#f0faf5; }
+
+  .booking-plate { font-family:'IBM Plex Mono',monospace; font-size:13px; font-weight:500; letter-spacing:1.5px; }
+  .booked-adr .booking-plate { color:var(--adr-color); }
+  .booked-normal .booking-plate { color:var(--normal-color); }
+  .booking-detail { font-size:11px; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+
+  .del-btn {
+    width:26px; height:26px; border-radius:7px; border:1px solid var(--border);
+    background:white; color:var(--danger); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+    opacity:0; transition:all .15s; flex-shrink:0;
+  }
+  .slot:hover .del-btn { opacity:1; }
+  .del-btn:hover { background:var(--danger-light); border-color:var(--danger); }
+
+  .ramp-toolbar {
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:10px 16px; display:flex; gap:8px; flex-shrink:0;
+  }
+  .tb-btn {
+    padding:7px 14px; border-radius:7px; border:1px solid var(--border2);
+    background:var(--surface2); color:var(--text-muted);
+    font-family:'Syne',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .tb-btn.danger { color:var(--danger); border-color:var(--adr-border); }
+  .tb-btn.danger:hover { background:var(--danger-light); border-color:var(--danger); }
+
+  .bottom-bar {
+    background:var(--surface); border-top:1px solid var(--border);
+    padding:10px 24px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+  }
+  .bottom-info { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-muted); }
+  .bottom-info strong { color:var(--text); font-size:14px; }
+  .bottom-actions { display:flex; gap:8px; }
+  .btn-back {
+    padding:8px 18px; border-radius:8px; border:1px solid var(--border2);
+    background:var(--surface2); color:var(--text-muted);
+    font-family:'Syne',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .btn-back:hover { color:var(--text); border-color:var(--text-muted); }
+  .btn-print {
+    padding:8px 18px; border-radius:8px; border:1px solid var(--accent);
+    background:var(--accent-light); color:var(--accent);
+    font-family:'Syne',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .btn-print:hover { background:var(--accent); color:white; }
+
+  /* MODAL */
+  .overlay {
+    display:none; position:fixed; inset:0; background:rgba(10,15,30,.35);
+    z-index:300; align-items:center; justify-content:center; backdrop-filter:blur(3px);
+  }
+  .overlay.active { display:flex; }
+  .modal {
+    background:var(--surface); border:1px solid var(--border); border-radius:18px;
+    width:420px; padding:28px; box-shadow:var(--shadow-md);
+    animation:popIn .22s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
+  .modal-head { margin-bottom:20px; }
+  .modal-head h3 { font-size:18px; font-weight:800; }
+  .modal-meta { display:flex; align-items:center; gap:8px; margin-top:6px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-muted); }
+  .modal-badge { padding:2px 9px; border-radius:4px; font-size:10px; font-weight:600; border:1px solid; }
+  .modal-badge.adr { color:var(--adr-color); border-color:var(--adr-border); background:var(--adr-light); }
+  .modal-badge.normal { color:var(--normal-color); border-color:var(--normal-border); background:var(--normal-light); }
+  .form-group { margin-bottom:14px; }
+  .form-group label { display:block; font-size:11px; font-weight:600; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; letter-spacing:.5px; margin-bottom:5px; }
+  .form-group input {
+    width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:9px;
+    padding:10px 13px; color:var(--text); font-family:'Syne',sans-serif; font-size:14px; outline:none; transition:border-color .15s;
+  }
+  .form-group input:focus { border-color:var(--accent); background:white; }
+  .form-group input.error { border-color:var(--danger); background:var(--danger-light); }
+  .form-group input::placeholder { color:var(--text-light); }
+  .modal-actions { display:flex; gap:10px; margin-top:22px; }
+  .btn-cancel {
+    flex:1; padding:11px; border-radius:9px; border:1px solid var(--border2);
+    background:var(--surface2); color:var(--text-muted);
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:600; cursor:pointer; transition:all .15s;
+  }
+  .btn-cancel:hover { color:var(--text); border-color:var(--text-muted); }
+  .btn-save {
+    flex:2; padding:11px; border-radius:9px; border:1px solid var(--accent);
+    background:var(--accent); color:white;
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all .15s;
+  }
+  .btn-save:hover { background:#2d5abf; }
+
+  @media print {
+    .app-header,.ramp-toolbar,.bottom-bar { display:none!important; }
+    .schedule-body { height:auto; overflow:visible; }
+    .timeline { overflow:visible; height:auto; }
+    .overlay { display:none!important; }
+  }
+
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --border: #e4e7ef;
+  --border2: #cdd2e0;
+  --text: #181c2e;
+  --text-muted: #788096;
+  --text-light: #b2b9cc;
+  --accent: #2563eb;
+  --accent-light: #eff4ff;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --green-border: #bbf7d0;
+  --orange: #ea580c;
+  --orange-light: #fff7ed;
+  --orange-border: #fed7aa;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --purple: #7c3aed;
+  --purple-light: #f5f3ff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ── */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-left { display: flex; align-items: center; gap: 14px; }
+
+.logo-mark {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.app-title { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+.app-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+
+.week-nav {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.week-nav:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+.week-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 120px;
+  text-align: center;
+}
+
+.header-right { display: flex; gap: 8px; align-items: center; }
+
+.hbtn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+}
+.hbtn:hover { color: var(--text); border-color: var(--text-muted); }
+.hbtn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+.hbtn.primary:hover { background: #1d4ed8; }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  padding: 20px 28px 28px;
+  overflow-x: auto;
+}
+
+/* ── WEEK TABLE ── */
+.week-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Day header row */
+.week-table thead tr th {
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.day-header {
+  padding: 14px 10px 12px;
+  text-align: center;
+}
+
+.day-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+
+.day-date {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  margin-top: 3px;
+  line-height: 1;
+}
+
+.day-header.today .day-name { color: var(--accent); }
+.day-header.today .day-date {
+  color: white;
+  background: var(--accent);
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 4px auto 0;
+  font-size: 16px;
+}
+
+.th-name {
+  padding: 14px 16px;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: .5px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th:not(:last-child), td:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+/* Person rows */
+.week-table tbody tr td {
+  vertical-align: top;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.week-table tbody tr:last-child td { border-bottom: none; }
+
+.name-cell {
+  padding: 12px 16px;
+  background: var(--bg);
+  white-space: nowrap;
+  min-width: 150px;
+}
+
+.person-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.person-role {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.day-cell {
+  padding: 8px;
+  min-width: 130px;
+  min-height: 64px;
+  position: relative;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.day-cell:hover { background: var(--accent-light); }
+
+.day-cell.has-entry { cursor: default; }
+.day-cell.has-entry:hover { background: transparent; }
+
+/* Entry chip */
+.entry-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+
+.entry-chip:hover { filter: brightness(0.97); }
+.entry-chip[ondblclick] { cursor: pointer; }
+.entry-chip[ondblclick]:hover { filter: brightness(0.95); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+
+.entry-chip.imo {
+  background: var(--orange-light);
+  border-color: var(--orange-border);
+}
+
+.entry-chip.imosuz {
+  background: var(--green-light);
+  border-color: var(--green-border);
+}
+
+.entry-chip.ithalat {
+  background: var(--purple-light);
+  border-color: #ddd6fe;
+}
+
+.entry-chip.other {
+  background: var(--bg);
+  border-color: var(--border2);
+}
+
+.entry-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 22px;
+}
+
+.entry-chip.imo .entry-count { color: var(--orange); }
+.entry-chip.imosuz .entry-count { color: var(--green); }
+.entry-chip.ithalat .entry-count { color: var(--purple); }
+.entry-chip.other .entry-count { color: var(--text-muted); }
+
+.entry-desc {
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.chip-del {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(0,0,0,0.08);
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+  transition: all .1s;
+}
+
+.entry-chip:hover .chip-del { display: flex; }
+.chip-del:hover { background: var(--red); color: white; }
+
+.add-entry-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-light);
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s;
+  width: 100%;
+  border: 1.5px dashed transparent;
+}
+
+.day-cell:hover .add-entry-btn {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: white;
+}
+
+/* Total row */
+.total-row td { background: var(--bg); border-top: 2px solid var(--border2); }
+.total-row .name-cell { font-weight: 700; font-size: 12px; color: var(--text-muted); letter-spacing: .5px; }
+.total-cell {
+  padding: 10px 12px;
+  text-align: center;
+}
+.total-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.total-num.warn { color: #d97706; }
+.total-num.over { color: #dc2626; font-weight: 700; }
+.total-cell.warn { background: #fffbeb; }
+.total-cell.over { background: #fef2f2; }
+.total-lbl { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+/* ── NOTES TABLE ── */
+.notes-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  min-width: 960px;
+}
+
+.notes-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: .8px;
+}
+
+.notes-grid {
+  display: grid;
+  grid-template-columns: 150px repeat(var(--day-count, 7), 1fr);
+}
+
+.notes-day-head {
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  text-align: center;
+  background: var(--bg);
+  font-family: 'DM Mono', monospace;
+}
+
+
+
+.notes-label {
+  padding: 10px 14px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: .3px;
+  display: flex;
+  align-items: center;
+}
+
+.notes-cell {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+  min-height: 36px;
+}
+
+
+
+.notes-cell textarea {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text);
+  resize: none;
+  min-height: 28px;
+  line-height: 1.5;
+}
+
+.notes-cell textarea::placeholder { color: var(--text-light); }
+
+/* ── MODAL ── */
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,15,35,.4);
+  z-index: 200;
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.overlay.active { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  width: 400px;
+  padding: 26px;
+  box-shadow: var(--shadow-lg);
+  animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from{opacity:0;transform:scale(.93)} to{opacity:1;transform:scale(1)} }
+
+.modal h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.modal-sub { font-size: 12px; color: var(--text-muted); font-family: 'DM Mono', monospace; margin-bottom: 20px; }
+
+.fg { margin-bottom: 13px; }
+.fg label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: .5px; margin-bottom: 5px; font-family: 'DM Mono', monospace; }
+.fg input, .fg select, .fg textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); background: white; }
+.fg input::placeholder, .fg textarea::placeholder { color: var(--text-light); }
+.fg select option { background: white; }
+
+.type-row {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 6px;
+  margin-bottom: 13px;
+}
+.type-opt {
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border2);
+  background: var(--bg);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  color: var(--text-muted);
+}
+.type-opt.sel-imo { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
+.type-opt.sel-imosuz { background: var(--green-light); border-color: var(--green); color: var(--green); }
+.type-opt.type-error { border-color: var(--red) !important; background: var(--red-light) !important; }
+.type-opt.sel-ithalat { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
+.type-opt.sel-other { background: var(--bg); border-color: var(--border2); color: var(--text); }
+
+.modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+.mbtn-cancel {
+  flex:1; padding:10px; border-radius:8px; border:1px solid var(--border2);
+  background:var(--bg); color:var(--text-muted); font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.mbtn-cancel:hover { color:var(--text); border-color:var(--text-muted); }
+.mbtn-save {
+  flex:2; padding:10px; border-radius:8px; border:1px solid var(--accent);
+  background:var(--accent); color:white; font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer; transition:all .15s;
+}
+.mbtn-save:hover { background:#1d4ed8; }
+
+/* Print */
+@media print {
+  .header, .overlay { display:none!important; }
+  body { background: white; }
+  .week-table, .notes-section { box-shadow:none; border:1px solid #ccc; }
+}
+
+
+/* ══ ADMIN PANEL ══ */
+.admin-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(10,15,35,.45); z-index:400;
+  align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.admin-overlay.active { display:flex; }
+
+.admin-panel {
+  background:white; border-radius:20px 20px 0 0;
+  width:100%; max-width:620px;
+  max-height:85vh; display:flex; flex-direction:column;
+  box-shadow:0 -8px 40px rgba(0,0,0,.15);
+  animation:slideUp .25s cubic-bezier(.34,1.2,.64,1);
+}
+@keyframes slideUp { from{transform:translateY(60px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+.admin-head {
+  padding:20px 24px 16px;
+  border-bottom:1px solid #e4e7ef;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.admin-head h3 { font-size:17px; font-weight:700; font-family:'DM Sans',sans-serif; }
+.admin-head p { font-size:12px; color:#788096; margin-top:2px; }
+.admin-close {
+  width:32px; height:32px; border-radius:8px; border:1px solid #e4e7ef;
+  background:#f6f7f9; cursor:pointer; font-size:16px; color:#788096;
+  display:flex; align-items:center; justify-content:center; transition:all .15s;
+}
+.admin-close:hover { background:#fee2e2; color:#dc2626; border-color:#fca5a5; }
+
+.admin-body {
+  flex:1; overflow-y:auto; padding:16px 24px;
+  scrollbar-width:thin; scrollbar-color:#e4e7ef transparent;
+}
+
+.person-list { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+
+.person-item {
+  display:flex; align-items:center; gap:10px;
+  background:#f6f7f9; border:1px solid #e4e7ef;
+  border-radius:11px; padding:10px 14px;
+  transition:all .15s;
+}
+.person-item:hover { border-color:#bfdbfe; background:#eff4ff; }
+
+.person-drag {
+  color:#b2b9cc; cursor:grab; font-size:16px; flex-shrink:0;
+  user-select:none;
+}
+
+.person-avatar {
+  width:32px; height:32px; border-radius:9px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  display:flex; align-items:center; justify-content:center;
+  color:white; font-size:13px; font-weight:700;
+  flex-shrink:0; font-family:'DM Sans',sans-serif;
+}
+
+.person-info { flex:1; min-width:0; }
+.person-name-disp { font-size:13px; font-weight:600; color:#181c2e; font-family:'DM Sans',sans-serif; }
+.person-role-disp { font-size:11px; color:#788096; }
+
+.person-actions { display:flex; gap:6px; flex-shrink:0; }
+.p-btn {
+  padding:5px 11px; border-radius:7px; border:1px solid #e4e7ef;
+  background:white; font-size:11px; font-weight:600;
+  cursor:pointer; transition:all .15s; font-family:'DM Sans',sans-serif;
+  color:#788096;
+}
+.p-btn:hover { color:#181c2e; border-color:#788096; }
+.p-btn.edit:hover { color:#2563eb; border-color:#bfdbfe; background:#eff4ff; }
+.p-btn.del:hover { color:#dc2626; border-color:#fca5a5; background:#fee2e2; }
+
+.admin-divider { border:none; border-top:1px solid #e4e7ef; margin:4px 0 16px; }
+
+.add-person-form {
+  background:#f6f7f9; border:1px solid #e4e7ef; border-radius:12px;
+  padding:16px;
+}
+.add-person-form h4 { font-size:13px; font-weight:700; color:#181c2e; margin-bottom:12px; font-family:'DM Sans',sans-serif; }
+.add-form-row { display:flex; gap:8px; align-items:flex-end; }
+.add-fg { flex:1; }
+.add-fg label { display:block; font-size:10px; font-weight:600; color:#788096; font-family:'DM Mono',monospace; letter-spacing:.5px; margin-bottom:4px; }
+.add-fg input {
+  width:100%; background:white; border:1px solid #d0d4de;
+  border-radius:8px; padding:8px 11px;
+  font-family:'DM Sans',sans-serif; font-size:13px; color:#181c2e;
+  outline:none; transition:border-color .15s;
+}
+.add-fg input:focus { border-color:#2563eb; }
+.add-fg input.error { border-color:#dc2626; background:#fef2f2; }
+.add-fg input::placeholder { color:#b2b9cc; }
+.btn-add-person {
+  padding:8px 18px; border-radius:8px; border:1px solid #2563eb;
+  background:#2563eb; color:white; font-family:'DM Sans',sans-serif;
+  font-size:13px; font-weight:700; cursor:pointer; transition:all .15s;
+  white-space:nowrap; flex-shrink:0;
+}
+.btn-add-person:hover { background:#1d4ed8; }
+
+/* Edit inline */
+.person-item.editing { border-color:#2563eb; background:#eff4ff; }
+.person-item.editing .person-edit-inputs { display:flex; gap:6px; flex:1; }
+.person-edit-inputs { display:none; }
+.person-edit-inputs input {
+  background:white; border:1px solid #d0d4de; border-radius:7px;
+  padding:5px 10px; font-size:12px; font-family:'DM Sans',sans-serif;
+  color:#181c2e; outline:none; transition:border-color .15s;
+}
+.person-edit-inputs input:focus { border-color:#2563eb; }
+.person-edit-inputs input.name-input { flex:2; }
+.person-edit-inputs input.role-input { flex:1; }
+
+
+/* ══ USER PICKER (inline) ══ */
+.user-picker-wrap { width: 100%; max-width: 520px; text-align: center; }
+
+.user-picker-grid {
+  display: flex; flex-direction: column; gap: 6px;
+  width: 100%; max-width: 360px; margin: 0 auto 24px;
+}
+
+.up-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 12px;
+  border: 1.5px solid #e4e7ef; background: white;
+  cursor: pointer; transition: all .15s; user-select: none;
+  font-family: 'Syne', sans-serif;
+}
+.up-item:hover { border-color: #2563eb; background: #eff4ff; transform: translateX(3px); }
+
+.up-avatar {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
+}
+.up-admin  { background: linear-gradient(135deg,#2563eb,#7c3aed); }
+.up-guest  { background: linear-gradient(135deg,#9ca3af,#6b7280); }
+.up-person { background: linear-gradient(135deg,#0891b2,#2563eb); }
+
+.up-info { flex: 1; }
+.up-name { font-size: 13px; font-weight: 600; color: #181c2e; }
+.up-role { font-size: 10px; color: #788096; letter-spacing: .5px; }
+.up-arrow { color: #b2b9cc; font-size: 14px; transition: all .15s; }
+.up-item:hover .up-arrow { color: #2563eb; transform: translateX(2px); }
+
+.sel-user-pill { display:flex; align-items:center; gap:8px; background:white; border:1.5px solid #e4e7ef; border-radius:40px; padding:7px 16px; }
+
+.selected-user-bar {
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+  margin-bottom: 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px; color: #788096;
+}
+.selected-user-bar .sub { font-size: 12px; color: #b2b9cc; cursor: pointer; text-decoration: underline; }
+.selected-user-bar .sub:hover { color: #2563eb; }
+
+/* Current user indicator in header */
+.current-user-chip {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 12px; border-radius:20px;
+  background:#f6f7f9; border:1px solid #e4e7ef;
+  font-size:12px; font-weight:600; color:#181c2e;
+  cursor:pointer; transition:all .15s;
+}
+.current-user-chip:hover { border-color:#2563eb; background:#eff4ff; color:#2563eb; }
+.current-user-chip .cu-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+
+/* Read-only overlay hint */
+.readonly-badge {
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  background:#1e293b; color:white; padding:8px 18px; border-radius:20px;
+  font-size:12px; font-weight:600; z-index:100; pointer-events:none;
+  opacity:0; transition:opacity .3s;
+}
+.readonly-badge.show { opacity:1; }
+
+/* Creator tag on booking */
+.booking-creator {
+  font-size:10px; color:#9ca3af; margin-top:3px;
+  font-family:'IBM Plex Mono',monospace;
+}
+
+
+/* Tatil günleri */
+.cal-day.holiday { color: #dc2626; font-weight: 700; }
+.cal-day.holiday:not(.selected):not(.past) { background: #fff1f2; border-color: #fca5a5; }
+.cal-day.holiday.today { border-color: #dc2626; }
+.cal-day.holiday.past { color: #fca5a5; }
+
+.th-holiday { background: #fff1f2 !important; }
+.th-holiday .day-name { color: #dc2626 !important; font-weight: 700; }
+.th-holiday .day-date { color: #dc2626 !important; }
+.day-holiday-name {
+  font-size: 9px; color: #dc2626; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 60px; margin-top: 1px;
+  font-family: 'DM Mono', monospace;
+}
+
+
+/* Admin parola modal */
+.pwd-overlay {
+  display:none; position:fixed; inset:0; z-index:600;
+  background:rgba(10,15,35,.5); backdrop-filter:blur(4px);
+  align-items:center; justify-content:center;
+}
+.pwd-overlay.active { display:flex; }
+.pwd-box {
+  background:white; border-radius:20px; padding:32px 28px;
+  width:100%; max-width:340px;
+  box-shadow:0 12px 48px rgba(0,0,0,.18);
+  font-family:'Syne',sans-serif; text-align:center;
+}
+.pwd-icon { font-size:32px; margin-bottom:12px; }
+.pwd-box h3 { font-size:17px; font-weight:800; color:#181c2e; margin-bottom:4px; }
+.pwd-box p { font-size:12px; color:#788096; margin-bottom:20px; }
+.pwd-input {
+  width:100%; padding:11px 14px; border-radius:10px;
+  border:1.5px solid #e4e7ef; font-size:15px; font-family:'IBM Plex Mono',monospace;
+  letter-spacing:3px; text-align:center; outline:none;
+  transition:border-color .15s; color:#181c2e;
+}
+.pwd-input:focus { border-color:#2563eb; }
+.pwd-input.error { border-color:#dc2626; background:#fff1f2; animation:shake .3s; }
+.pwd-error { font-size:12px; color:#dc2626; margin-top:8px; min-height:16px; }
+.pwd-btn {
+  margin-top:16px; width:100%; padding:11px;
+  border-radius:10px; border:none;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  color:white; font-size:14px; font-weight:700;
+  cursor:pointer; transition:opacity .15s; font-family:'Syne',sans-serif;
+}
+.pwd-btn:hover { opacity:.9; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  75%{transform:translateX(6px)}
+}
+
+</style>
+</head>
+<body>
+
+<!-- LAUNCHER -->
+<div class="readonly-badge" id="readonlyBadge">👁 Misafir modu — Sadece görüntüleme</div>
+
+<div class="launcher active" id="launcher">
+  <div class="launcher-logo">🏭</div>
+  <h1>Akkim Depolama Merkezi<br><span style="color:var(--accent)">İthalat ve İhracat Planı</span></h1>
+
+  <!-- USER PICKER -->
+  <div class="user-picker-wrap" id="userPickerWrap">
+    <p class="launcher-sub" style="margin-bottom:14px;font-weight:600;color:#788096;font-size:12px;letter-spacing:.5px">KULLANICI SEÇİN</p>
+    <div class="user-picker-grid" id="userPickerGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- APP CARDS (hidden until user selected) -->
+  <div id="appCardsSection" style="display:none">
+    <div class="selected-user-bar" id="selectedUserBar">
+      <!-- Populated by JS -->
+    </div>
+    <div class="app-cards">
+      <div class="app-card" id="card-randevu">
+        <div class="card-icon blue">📅</div>
+        <h3>Randevu Sistemi</h3>
+        <p>Yükleme rampası randevularını takvim üzerinden yönetin.</p>
+        <div class="card-arrow">→</div>
+      </div>
+      <div class="app-card" id="card-haftalik">
+        <div class="card-icon purple">📋</div>
+        <h3>Haftalık Plan</h3>
+        <p>Personel bazlı haftalık yükleme planını görüntüleyin ve düzenleyin.</p>
+        <div class="card-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell" id="shell-randevu">
+<!-- HOME -->
+<div id="homePage" class="page active">
+  <header class="app-header">
+    <div class="logo">
+      <div class="logo-icon">🏭</div>
+      <div class="logo-text">DEPO <span>RANDEVU</span></div>
+    </div>
+    <div class="header-right">
+      <div class="chip date" id="todayChip">—</div>
+    </div>
+  </header>
+
+  <div class="home-body">
+    <div class="home-hero">
+      <h1>Yükleme Rampası<br><span>Randevu Sistemi</span></h1>
+      <p>Tarih seçerek o güne ait yükleme randevularını<br>görüntüleyin ve düzenleyin.</p>
+    </div>
+
+    <div class="calendar-card">
+      <div class="cal-header">
+        <div class="cal-title" id="calTitle">—</div>
+        <div class="cal-nav">
+          <button onclick="R.changeMonth(-1)">‹</button>
+          <button onclick="R.changeMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="cal-weekdays">
+        <div class="cal-weekday" style="font-size:9px;color:var(--text-light)">Hf</div><div class="cal-weekday">Pt</div><div class="cal-weekday">Sa</div>
+        <div class="cal-weekday">Ça</div><div class="cal-weekday">Pe</div>
+        <div class="cal-weekday">Cu</div><div class="cal-weekday">Ct</div>
+        <div class="cal-weekday">Pz</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+
+    </div>
+
+    <div class="home-stats">
+      <div class="stat-card adr"><div class="num" id="homeAdrCount">0</div><div class="lbl">IMO'lu Araç</div></div>
+      <div class="stat-card normal"><div class="num" id="homeNormalCount">0</div><div class="lbl">IMO'suz Araç</div></div>
+      <div class="stat-card total"><div class="num" id="homeTotalCount">0</div><div class="lbl">Toplam</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE -->
+<div id="schedulePage" class="page">
+  <header class="app-header">
+    <div class="logo">
+      <div class="logo-icon">🏭</div>
+      <div class="logo-text">DEPO <span>RANDEVU</span></div>
+    </div>
+    <div class="header-right">
+      <button onclick="R.goHome()" style="display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:8px;border:1.5px solid #e4e7ef;background:white;color:#788096;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#2563eb';this.style.background='#eff4ff'" onmouseout="this.style.borderColor='#e4e7ef';this.style.color='#788096';this.style.background='white'">← Takvime Dön</button>
+      <div class="chip date" id="schedDateChip">—</div>
+      <div class="chip adr" id="schedAdrChip">IMO'lu: 0/0</div>
+      <div class="chip normal" id="schedNormalChip">IMO'suz: 0/0</div>
+    </div>
+  </header>
+
+  <div class="schedule-body">
+    <div class="ramp-col">
+      <div class="ramp-head">
+        <div class="ramp-label">
+          <div class="ramp-dot" style="background:var(--adr-color)"></div>
+          <div><h2>RAMPA 1 — IMO'LU</h2><div class="ramp-meta">IMO'lu araç • 90 dk/araç</div></div>
+        </div>
+        <div class="ramp-count">
+          <div class="big" id="adrCountBig" style="color:var(--adr-color)">0</div>
+          <div class="small">araç/gün</div>
+        </div>
+      </div>
+      <div class="timeline" id="timeline-adr"></div>
+    </div>
+
+    <div class="ramp-col">
+      <div class="ramp-head">
+        <div class="ramp-label">
+          <div class="ramp-dot" style="background:var(--normal-color)"></div>
+          <div><h2>RAMPA 2 — IMO'SUZ</h2><div class="ramp-meta">IMO'suz araç • 75 dk/araç</div></div>
+        </div>
+        <div class="ramp-count">
+          <div class="big" id="normalCountBig" style="color:var(--normal-color)">0</div>
+          <div class="small">araç/gün</div>
+        </div>
+      </div>
+      <div class="timeline" id="timeline-normal"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="bottom-info">Toplam <strong id="totalCountSched">0</strong> araç planlandı</div>
+    <div class="bottom-actions">
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="modalOverlay" onclick="R.handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="bookingModalTitle">Randevu Ekle</h3>
+      <div class="modal-meta">
+        <span id="modalSlotInfo">—</span>
+        <span class="modal-badge" id="modalBadge">—</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>ARAÇ PLAKASI &amp; KONTEYNER NUMARASI *</label>
+      <input type="text" id="fieldPlate" placeholder="" maxlength="14"
+        style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace;letter-spacing:2px;font-size:15px;">
+    </div>
+    <div class="form-group">
+      <label>FİRMA / SİPARİŞ NUMARASI *</label>
+      <input type="text" id="fieldCompany" placeholder="">
+    </div>
+    <div class="form-group">
+      <label>YÜK / ÜRÜN BİLGİSİ</label>
+      <input type="text" id="fieldCargo" placeholder="">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="R.closeModal()">İptal</button>
+      <button class="btn-save" onclick="R.saveBooking()">✓ Kaydet</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="app-shell" id="shell-haftalik">
+<header class="header">
+  <div class="header-left">
+    <div class="logo-mark">📋</div>
+    <div>
+      <div class="app-title">HAFTALIK PLAN</div>
+      <div class="app-sub" id="depotName">901 AKKİM DEPOLAMA MERKEZİ</div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <button class="week-nav" onclick="H.changeWeek(-1)">‹</button>
+    <div class="week-label" id="weekLabel">—</div>
+    <button class="week-nav" onclick="H.changeWeek(1)">›</button>
+  </div>
+
+  <div class="header-right">
+    <button class="hbtn" onclick="H.goToday()">Bu Hafta</button>
+    <span id="adminBtnWrapper"></span>
+  </div>
+</header>
+
+<div class="main">
+  <table class="week-table" id="weekTable">
+    <thead id="tableHead"></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <!-- Notes / Approval section -->
+  <div class="notes-section">
+    <div class="notes-header">AÇIKLAMALAR & ONAYLAR</div>
+    <div class="notes-grid" id="notesGrid"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="H.handleOverlay(event)">
+  <div class="modal">
+    <h3 id="modalTitle">Kayıt Ekle</h3>
+    <div class="modal-sub" id="modalSub">—</div>
+
+    <div class="fg">
+      <label>TÜR</label>
+      <div class="type-row">
+        <div class="type-opt" data-type="imo" onclick="H.selectType('imo')">IMO'lu</div>
+        <div class="type-opt" data-type="imosuz" onclick="H.selectType('imosuz')">IMO'suz</div>
+        <div class="type-opt" data-type="ithalat" onclick="H.selectType('ithalat')">İthalat</div>
+        <div class="type-opt" data-type="other" onclick="H.selectType('other')">Diğer</div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>ARAÇ / KONTEYNER SAYISI</label>
+      <input type="number" id="fCount" placeholder="0" min="0" max="99" oninput="this.classList.remove('error')">
+    </div>
+
+    <div class="fg">
+      <label>AÇIKLAMA</label>
+      <textarea id="fDesc" placeholder="Firma adı, konteyner tipi, vb." rows="3" oninput="this.classList.remove('error')"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="mbtn-cancel" onclick="H.closeModal()">İptal</button>
+      <button class="mbtn-save" onclick="H.saveEntry()">✓ Kaydet</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ADMIN PANEL -->
+<div class="admin-overlay" id="adminOverlay" onclick="H.handleAdminOverlay(event)">
+  <div class="admin-panel">
+    <div class="admin-head">
+      <div>
+        <h3>⚙ Kişi Yönetimi</h3>
+        <p>Haftalık planda görünen kişileri düzenleyin</p>
+      </div>
+      <button class="admin-close" onclick="H.closeAdmin()">✕</button>
+    </div>
+    <div class="admin-body">
+      <div class="person-list" id="personList"></div>
+      <hr class="admin-divider">
+      <div class="add-person-form">
+        <h4>+ Yeni Kişi Ekle</h4>
+        <div class="add-form-row">
+          <div class="add-fg">
+            <label>AD SOYAD *</label>
+            <input type="text" id="newPersonName" placeholder="Ad Soyad">
+          </div>
+          <div class="add-fg" style="max-width:130px">
+            <label>ÜNVAN / ROL</label>
+            <input type="text" id="newPersonRole" placeholder="örn: ASK">
+          </div>
+          <button class="btn-add-person" onclick="H.addPerson()">Ekle</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDbGW1xiyRpxQmLIWLYQ3t7Ppq9tHKe9Ec",
+  authDomain: "akkim-plan.firebaseapp.com",
+  projectId: "akkim-plan",
+  storageBucket: "akkim-plan.firebasestorage.app",
+  messagingSenderId: "751503194833",
+  appId: "1:751503194833:web:36de9c671732407ecd63f0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── DB HELPERS ──
+
+// RANDEVU: allBookings objesi { "YYYY-MM-DD": { adr:{}, normal:{} } }
+async function loadBookings() {
+  try {
+    const snap = await getDocs(collection(db, 'bookings'));
+    const result = {};
+    snap.forEach(d => { result[d.id] = d.data(); });
+    return result;
+  } catch(e) { console.error('loadBookings:', e); return {}; }
+}
+
+async function saveBookingDate(dateKey, bookingData) {
+  try {
+    await setDoc(doc(db, 'bookings', dateKey), bookingData);
+  } catch(e) { console.error('saveBookingDate:', e); }
+}
+
+// HAFTALIK: data objesi { "YYYY-Www": { personId_dayIdx: [...] } }
+async function loadWeeklyData() {
+  try {
+    const snap = await getDocs(collection(db, 'weeklyplan'));
+    const result = {};
+    snap.forEach(d => { result[d.id] = d.data(); });
+    return result;
+  } catch(e) { console.error('loadWeeklyData:', e); return {}; }
+}
+
+async function saveWeeklyWeek(weekKey, weekData) {
+  try {
+    await setDoc(doc(db, 'weeklyplan', weekKey), weekData);
+  } catch(e) { console.error('saveWeeklyWeek:', e); }
+}
+
+// NOTES
+async function loadNotes() {
+  try {
+    const snap = await getDocs(collection(db, 'notes'));
+    const result = {};
+    snap.forEach(d => { result[d.id] = d.data(); });
+    return result;
+  } catch(e) { console.error('loadNotes:', e); return {}; }
+}
+
+async function saveNoteWeek(weekKey, noteData) {
+  try {
+    await setDoc(doc(db, 'notes', weekKey), noteData);
+  } catch(e) { console.error('saveNoteWeek:', e); }
+}
+
+// PERSONS
+async function loadPersons() {
+  try {
+    const snap = await getDoc(doc(db, 'config', 'persons'));
+    if (snap.exists()) return snap.data().list;
+    return null;
+  } catch(e) { console.error('loadPersons:', e); return null; }
+}
+
+async function savePersons(list) {
+  try {
+    // Ensure all fields exist to avoid Firestore stripping empty strings
+    const cleaned = list.map(p => ({ id: p.id || '', name: p.name || '', role: p.role || '' }));
+    await setDoc(doc(db, 'config', 'persons'), { list: cleaned });
+  } catch(e) { console.error('savePersons:', e); }
+}
+
+// Expose to window so our app scripts can call them
+window.DB = { loadBookings, saveBookingDate, loadWeeklyData, saveWeeklyWeek, loadNotes, saveNoteWeek, loadPersons, savePersons };
+
+// Signal that Firebase is ready
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<script>
+/* == RANDEVU APP == */
+(function() {
+"use strict";
+
+const WORK_START      = 8*60+30;
+const WORK_END        = 25*60;
+const ADR_DURATION    = 90;
+const NORMAL_DURATION = 75;
+const BREAKS = [
+  [10*60,10*60+15],[12*60,13*60],[15*60,15*60+15],
+  [16*60+45,17*60+15],[19*60+15,20*60],[22*60,22*60+15],[23*60+45,24*60]
+];
+
+let allBookings = {};
+let _bookingsLoaded = false;
+let selectedDate = null;
+let currentYear, currentMonth;
+const today = new Date(); today.setHours(0,0,0,0);
+
+function toTime(min) {
+  const h = Math.floor(min/60)%24, m = min%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function dateKey(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), dd=String(d.getDate()).padStart(2,"0"); return y+"-"+m+"-"+dd; }
+function parseKey(k) { const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d); }
+function formatDateShort(k) { return parseKey(k).toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'}); }
+
+function bookingsForDate(k) {
+  if (!allBookings[k]) allBookings[k]={adr:{},normal:{}};
+  return allBookings[k];
+}
+
+function generateWorkSlots(type) {
+  const dur = type==='adr'?ADR_DURATION:NORMAL_DURATION;
+  const slots=[]; let t=WORK_START;
+  while (t+dur<=WORK_END) {
+    const bk=BREAKS.find(b=>t<b[1]&&t+dur>b[0]);
+    if (bk){t=bk[1];continue;}
+    slots.push({start:t,end:t+dur});
+    t+=dur;
+    const nb=BREAKS.find(b=>b[0]===t);
+    if(nb)t=nb[1];
+  }
+  return slots;
+}
+
+const ADR_SLOTS=generateWorkSlots('adr');
+const NORMAL_SLOTS=generateWorkSlots('normal');
+
+function isSlotPast(dateK, slotEnd) {
+  const d=parseKey(dateK);
+  if(d<today) return true;
+  if(d>today) return false;
+  const n=new Date(); const nm=n.getHours()*60+n.getMinutes();
+  const endReal=slotEnd>1440?slotEnd-1440:slotEnd;
+  if(slotEnd>1440&&nm<1440) return false;
+  return endReal<=nm;
+}
+
+// Calendar
+function initCalendar() {
+  currentYear=today.getFullYear(); currentMonth=today.getMonth();
+  renderCalendar();
+  document.getElementById('todayChip').textContent=
+    today.toLocaleDateString('tr-TR',{weekday:'short',day:'2-digit',month:'long'});
+  // Load bookings from Firebase
+  if (window.DB) {
+    window.DB.loadBookings().then(function(remote) {
+      allBookings = remote || {};
+      renderCalendar();
+    });
+  }
+}
+
+function changeMonth(dir) {
+  currentMonth+=dir;
+  if(currentMonth>11){currentMonth=0;currentYear++;}
+  if(currentMonth<0){currentMonth=11;currentYear--;}
+  renderCalendar();
+}
+
+function getWeekNum(date) {
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d-yearStart)/86400000)+1)/7);
+}
+
+
+// ── TÜRKİYE RESMİ TATİLLERİ ──
+function getTRHolidays(year) {
+  var h = {};
+  function add(m, d, name) {
+    var key = year + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    h[key] = name;
+  }
+  // Sabit tatiller
+  add(1,1,'Yılbaşı');
+  add(4,23,'Ulusal Egemenlik');
+  add(5,1,'İşçi Bayramı');
+  add(5,19,'Gençlik Bayramı');
+  add(7,15,'Demokrasi Bayramı');
+  add(8,30,'Zafer Bayramı');
+  add(10,29,'Cumhuriyet Bayramı');
+  return h;
+}
+
+// Dini tatiller (yaklaşık — her yıl güncellenmesi gerekir)
+var DINI_TATILLER = {
+  // Ramazan Bayramı (3 gün)
+  '2024-04-10':'Ramazan Bayramı','2024-04-11':'Ramazan Bayramı','2024-04-12':'Ramazan Bayramı',
+  '2025-03-30':'Ramazan Bayramı','2025-03-31':'Ramazan Bayramı','2025-04-01':'Ramazan Bayramı',
+  '2026-03-20':'Ramazan Bayramı','2026-03-21':'Ramazan Bayramı','2026-03-22':'Ramazan Bayramı',
+  '2027-03-09':'Ramazan Bayramı','2027-03-10':'Ramazan Bayramı','2027-03-11':'Ramazan Bayramı',
+  // Kurban Bayramı (4 gün)
+  '2024-06-16':'Kurban Bayramı','2024-06-17':'Kurban Bayramı','2024-06-18':'Kurban Bayramı','2024-06-19':'Kurban Bayramı',
+  '2025-06-06':'Kurban Bayramı','2025-06-07':'Kurban Bayramı','2025-06-08':'Kurban Bayramı','2025-06-09':'Kurban Bayramı',
+  '2026-05-27':'Kurban Bayramı','2026-05-28':'Kurban Bayramı','2026-05-29':'Kurban Bayramı','2026-05-30':'Kurban Bayramı',
+  '2027-05-17':'Kurban Bayramı','2027-05-18':'Kurban Bayramı','2027-05-19':'Kurban Bayramı','2027-05-20':'Kurban Bayramı',
+};
+
+function isHoliday(dateKey) {
+  if(!dateKey) return null;
+  var year = parseInt(dateKey.slice(0,4));
+  var fixed = getTRHolidays(year);
+  return fixed[dateKey] || DINI_TATILLER[dateKey] || null;
+}
+
+function renderCalendar() {
+  const months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  document.getElementById('calTitle').textContent=`${months[currentMonth]} ${currentYear}`;
+  const grid=document.getElementById('calGrid'); grid.innerHTML='';
+  const firstDay=new Date(currentYear,currentMonth,1);
+  let dow=firstDay.getDay(); dow=(dow===0)?6:dow-1;
+  const dim=new Date(currentYear,currentMonth+1,0).getDate();
+  const todayKey=dateKey(today);
+  let col=dow; // track current column (0=Mon..6=Sun)
+  // Add week number for first row, then empty cells
+  const firstDate=new Date(currentYear,currentMonth,1);
+  const firstWeek=getWeekNum(new Date(currentYear,currentMonth,1-dow));
+  const wn=document.createElement('div'); wn.className='cal-week-num'; wn.textContent=firstWeek; grid.appendChild(wn);
+  for(let i=0;i<dow;i++){const c=document.createElement('div');c.className='cal-day empty';grid.appendChild(c);}
+  for(let d=1;d<=dim;d++){
+    // At start of each new row (Mon), insert week number
+    if(d>1 && col%7===0){
+      const wc=document.createElement('div'); wc.className='cal-week-num';
+      wc.textContent=getWeekNum(new Date(currentYear,currentMonth,d));
+      grid.appendChild(wc);
+    }
+    const date=new Date(currentYear,currentMonth,d);
+    const k=dateKey(date);
+    const hol = isHoliday(k);
+    const c=document.createElement('div'); c.className='cal-day'; c.textContent=d;
+    if(hol) c.classList.add('holiday');
+    if(date<today)c.classList.add('past');
+    if(k===todayKey)c.classList.add('today');
+    if(k===selectedDate)c.classList.add('selected');
+    if(hol) c.title = hol;
+    const bk=allBookings[k];
+    if(bk&&(Object.keys(bk.adr||{}).length+Object.keys(bk.normal||{}).length)>0)c.classList.add('has-data');
+    c.addEventListener('click',()=>selectDate(k));
+    c.addEventListener('dblclick',()=>{selectDate(k);openSchedule();});
+    grid.appendChild(c);
+    col++;
+  }
+}
+
+function selectDate(k) {
+  selectedDate=k; renderCalendar();
+  updateHomeStats(k);
+}
+
+function updateHomeStats(k) {
+  const bk=bookingsForDate(k);
+  const a=Object.keys(bk.adr).length, n=Object.keys(bk.normal).length;
+  document.getElementById('homeAdrCount').textContent=a;
+  document.getElementById('homeNormalCount').textContent=n;
+  document.getElementById('homeTotalCount').textContent=a+n;
+}
+
+function openSchedule() {
+  if(!selectedDate)return;
+  document.getElementById('homePage').classList.remove('active');
+  document.getElementById('schedulePage').classList.add('active');
+  document.getElementById('schedDateChip').textContent=formatDateShort(selectedDate);
+  render('adr'); render('normal');
+}
+
+function goHome() {
+  document.getElementById('schedulePage').classList.remove('active');
+  document.getElementById('homePage').classList.add('active');
+  if(selectedDate)updateHomeStats(selectedDate);
+  renderCalendar();
+}
+
+function render(type) {
+  const slots=type==='adr'?ADR_SLOTS:NORMAL_SLOTS;
+  const bk=bookingsForDate(selectedDate)[type];
+  const cont=document.getElementById(`timeline-${type}`);
+  let html='';
+  slots.forEach((slot,idx)=>{
+    const booking=bk[idx];
+    const past=isSlotPast(selectedDate,slot.end);
+    const pc=past?' past-slot':'';
+    const tc=`<div class="slot-time-col"><span class="t-start">${toTime(slot.start)}</span><span class="t-sep">↓</span><span class="t-end">${toTime(slot.end)}</span></div>`;
+    if(booking){
+      const cu2 = window._currentUser;
+      const isOwner = cu2 && booking.createdBy && booking.createdBy === cu2.name;
+      const canDel = cu2 && (cu2.role === 'admin' || isOwner);
+    const delBtn = canDel ? `<button class="del-btn" onclick="R.deleteBooking('${type}',${idx},event)">✕</button>` : '';
+    const creatorTag = booking.createdBy ? `<div class="booking-creator">↳ ${booking.createdBy}</div>` : '';
+    const editSlot = canDel ? `ondblclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}',true)" title="Düzenlemek için çift tıklayın" style="cursor:pointer"` : '';
+    html+=`<div class="slot booked booked-${type}${pc}" ${editSlot}>${tc}<div class="slot-body"><div><div class="booking-plate">${booking.plate}</div><div class="booking-detail">${booking.company}${booking.cargo?' · '+booking.cargo:''}</div>${creatorTag}</div>${delBtn}</div></div>`;
+    } else {
+      const cu3 = window._currentUser;
+      const canAdd = cu3 && cu3.role !== 'guest';
+    if(canAdd){
+      html+=`<div class="slot empty${pc}" onclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}')">${tc}<div class="slot-body"><span class="empty-hint">Boş slot</span><div class="plus-btn">+</div></div></div>`;
+    } else {
+      html+=`<div class="slot empty${pc}" onclick="R.showReadonlyHint()">${tc}<div class="slot-body"><span class="empty-hint" style="color:#d1d5db">Boş</span></div></div>`;
+    }
+    }
+  });
+  cont.innerHTML=html;
+  updateSchedStats();
+}
+
+function updateSchedStats() {
+  if(!selectedDate)return;
+  const bk=bookingsForDate(selectedDate);
+  const a=Object.keys(bk.adr).length, n=Object.keys(bk.normal).length;
+  document.getElementById('adrCountBig').textContent=a;
+  document.getElementById('normalCountBig').textContent=n;
+  document.getElementById('schedAdrChip').textContent=`IMO'lu: ${a}/${ADR_SLOTS.length}`;
+  document.getElementById('schedNormalChip').textContent=`IMO'suz: ${n}/${NORMAL_SLOTS.length}`;
+  document.getElementById('totalCountSched').textContent=a+n;
+}
+
+let modalCtx={type:null,idx:null};
+
+function openModal(type,idx,startT,endT,editMode) {
+  modalCtx={type,idx};
+  document.getElementById('modalSlotInfo').textContent=`${startT} – ${endT}  ·  Rampa ${type==='adr'?'1':'2'}`;
+  const badge=document.getElementById('modalBadge');
+  badge.textContent=type==='adr'?"IMO'lu":"IMO'suz"; badge.className=`modal-badge ${type}`;
+  ['fieldPlate','fieldCompany','fieldCargo'].forEach(id=>{
+    const el=document.getElementById(id); el.value=''; el.classList.remove('error');
+  });
+  if(editMode) {
+    const booking=bookingsForDate(selectedDate)[type][idx];
+    if(booking){
+      document.getElementById('fieldPlate').value=booking.plate||'';
+      document.getElementById('fieldCompany').value=booking.company||'';
+      document.getElementById('fieldCargo').value=booking.cargo||'';
+    }
+    document.getElementById('bookingModalTitle').textContent='Randevu Düzenle';
+  } else {
+    document.getElementById('bookingModalTitle').textContent='Randevu Ekle';
+  }
+  document.getElementById('modalOverlay').classList.add('active');
+  setTimeout(()=>document.getElementById('fieldPlate').focus(),80);
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+function handleOverlayClick(e) { if(e.target===document.getElementById('modalOverlay'))closeModal(); }
+
+function saveBooking() {
+  const plate=document.getElementById('fieldPlate').value.trim().toUpperCase();
+  const company=document.getElementById('fieldCompany').value.trim();
+  const cargo=document.getElementById('fieldCargo').value.trim();
+  let valid=true;
+  if(!plate){document.getElementById('fieldPlate').classList.add('error');document.getElementById('fieldPlate').focus();valid=false;}
+  if(!company){document.getElementById('fieldCompany').classList.add('error');if(valid)document.getElementById('fieldCompany').focus();valid=false;}
+  if(!valid)return;
+  const creator = (window._currentUser && window._currentUser.role !== 'guest') ? window._currentUser.name : '';
+  bookingsForDate(selectedDate)[modalCtx.type][modalCtx.idx]={plate,company,cargo,createdBy:creator};
+  closeModal(); render(modalCtx.type); renderCalendar();
+  if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
+}
+
+function deleteBooking(type,idx,e) {
+  e.stopPropagation();
+  delete bookingsForDate(selectedDate)[type][idx];
+  render(type); renderCalendar();
+  if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
+}
+
+function clearRamp(type) {
+  bookingsForDate(selectedDate)[type]={};
+  render(type); renderCalendar();
+}
+
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('modalOverlay').classList.contains('active'))return;
+  if(e.key==='Enter')saveBooking();
+  if(e.key==='Escape')closeModal();
+});
+
+/* deferred */
+
+window.R = {
+  changeMonth: changeMonth,
+  goHome: goHome,
+  clearRamp: clearRamp,
+  handleOverlayClick: handleOverlayClick,
+  closeModal: closeModal,
+  saveBooking: saveBooking,
+  deleteBooking: deleteBooking,
+  openModal: openModal,
+  initCalendar: initCalendar,
+  render: render,
+  showReadonlyHint: function() {
+    var b = document.getElementById('readonlyBadge');
+    if(!b) return;
+    b.classList.add('show');
+    setTimeout(function(){ b.classList.remove('show'); }, 2000);
+  }
+};
+
+})();
+
+/* == HAFTALIK APP == */
+(function() {
+"use strict";
+
+// ── DATA ──
+
+// ── PERSONS (mutable) ──
+var PERSONS = [
+  { id:'atahan',  name:'Atahan Anaklı',     role:'' },
+  { id:'betul',   name:'Betül Karabal',      role:'' },
+  { id:'bilgesu', name:'Bilgesu Kandemir',   role:'' },
+  { id:'hilal',   name:'Hilal Aytaç',        role:'' },
+  { id:'kardem',  name:'Kardem Kafadar',     role:'' },
+  { id:'zeynep',  name:'Zeynep Aslı Kösem', role:'' },
+  { id:'erman',   name:'Erman Ergül',        role:'ASK' },
+  { id:'ithalat', name:'İTHALAT',            role:'' },
+];
+
+function genId(name) {
+  return name.toLowerCase()
+    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
+    .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
+    .replace(/[^a-z0-9]/g,'') + '_' + Date.now().toString(36);
+}
+
+function getInitials(name) {
+  return name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+}
+
+// ── ADMIN ──
+function openAdmin() {
+  renderPersonList();
+  document.getElementById('adminOverlay').classList.add('active');
+  document.getElementById('newPersonName').value = '';
+  document.getElementById('newPersonRole').value = '';
+}
+
+function closeAdmin() {
+  document.getElementById('adminOverlay').classList.remove('active');
+  render();
+}
+
+function handleAdminOverlay(e) {
+  if (e.target === document.getElementById('adminOverlay')) closeAdmin();
+}
+
+function renderPersonList() {
+  const list = document.getElementById('personList');
+  if (!list) return;
+  list.innerHTML = PERSONS.map(p => {
+    const roleHtml = p.role ? '<div class="person-role-disp">' + p.role + '</div>' : '';
+    return '<div class="person-item" id="pitem-' + p.id + '">'
+      + '<span class="person-drag">⠿</span>'
+      + '<div class="person-avatar">' + getInitials(p.name) + '</div>'
+      + '<div class="person-info" id="pinfo-' + p.id + '">'
+      +   '<div class="person-name-disp">' + p.name + '</div>'
+      +   roleHtml
+      + '</div>'
+      + '<div class="person-edit-inputs" id="pedit-' + p.id + '" style="display:none">'
+      +   '<input class="name-input" type="text" value="' + p.name + '" placeholder="Ad Soyad" id="pename-' + p.id + '">'
+      +   '<input class="role-input" type="text" value="' + (p.role||'') + '" placeholder="Rol" id="perole-' + p.id + '">'
+      + '</div>'
+      + '<div class="person-actions" id="pactions-' + p.id + '">'
+      +   '<button class="p-btn edit" onclick="H.editPerson(\'' + p.id + '\')">✏ Düzenle</button>'
+      +   '<button class="p-btn del" onclick="H.deletePerson(\'' + p.id + '\')">🗑 Sil</button>'
+      + '</div>'
+      + '<div class="person-actions" id="psave-' + p.id + '" style="display:none">'
+      +   '<button class="p-btn edit" style="color:#16a34a;border-color:#bbf7d0;background:#f0fdf4" onclick="H.savePerson(\'' + p.id + '\')">✓ Kaydet</button>'
+      +   '<button class="p-btn" onclick="H.cancelEdit(\'' + p.id + '\')">İptal</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function editPerson(id) {
+  const item = document.getElementById('pitem-' + id);
+  item.classList.add('editing');
+  document.getElementById('pinfo-' + id).style.display = 'none';
+  document.getElementById('pedit-' + id).style.display = 'flex';
+  document.getElementById('pactions-' + id).style.display = 'none';
+  document.getElementById('psave-' + id).style.display = 'flex';
+  document.getElementById('pename-' + id).focus();
+}
+
+function cancelEdit(id) {
+  const item = document.getElementById('pitem-' + id);
+  item.classList.remove('editing');
+  document.getElementById('pinfo-' + id).style.display = '';
+  document.getElementById('pedit-' + id).style.display = 'none';
+  document.getElementById('pactions-' + id).style.display = 'flex';
+  document.getElementById('psave-' + id).style.display = 'none';
+}
+
+function savePerson(id) {
+  const name = document.getElementById('pename-' + id).value.trim();
+  const role = document.getElementById('perole-' + id).value.trim();
+  if (!name) { document.getElementById('pename-' + id).style.borderColor = '#dc2626'; return; }
+  const p = PERSONS.find(x => x.id === id);
+  if (p) { p.name = name; p.role = role; }
+  renderPersonList();
+  render();
+  if (window.DB) window.DB.savePersons(JSON.parse(JSON.stringify(PERSONS))).then(function() {
+    // Show brief save confirmation
+    const btn = document.querySelector('#psave-' + id + ' .p-btn');
+    // panel re-rendered, just confirm in console
+    console.log('Persons saved to Firebase');
+  });
+}
+
+function deletePerson(id) {
+  PERSONS = PERSONS.filter(p => p.id !== id);
+  renderPersonList();
+  if (window.DB) window.DB.savePersons(JSON.parse(JSON.stringify(PERSONS)));
+}
+
+function addPerson() {
+  const nameEl = document.getElementById('newPersonName');
+  const roleEl = document.getElementById('newPersonRole');
+  const name = nameEl.value.trim();
+  const role = roleEl.value.trim();
+  if (!name) { nameEl.classList.add('error'); nameEl.focus(); return; }
+  nameEl.classList.remove('error');
+  PERSONS.push({ id: genId(name), name, role });
+  nameEl.value = '';
+  roleEl.value = '';
+  renderPersonList();
+  nameEl.focus();
+  if (window.DB) window.DB.savePersons(JSON.parse(JSON.stringify(PERSONS)));
+}
+
+
+// Storage: weekKey "YYYY-Www" → { personId_dayIndex: [{count, desc, type}] }
+let data = {};
+
+// Notes: weekKey → { dayIndex: { aciklama, onay } }
+let notes = {};
+
+let currentMonday = getMonday(new Date());
+let modalCtx = null;
+let selectedType = 'imo';
+
+// ── WEEK HELPERS ──
+function getMonday(d) {
+  const dt = new Date(d); dt.setHours(0,0,0,0);
+  const day = dt.getDay();
+  const diff = (day===0)?-6:1-day;
+  dt.setDate(dt.getDate()+diff);
+  return dt;
+}
+
+function getWeekDays(monday) {
+  return Array.from({length:7}, (_,i) => {
+    const d = new Date(monday); d.setDate(d.getDate()+i); return d;
+  });
+}
+
+function getISOWeek(d) {
+  const dt = new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));
+  const day = dt.getUTCDay()||7;
+  dt.setUTCDate(dt.getUTCDate()+4-day);
+  const y = dt.getUTCFullYear();
+  const start = new Date(Date.UTC(y,0,1));
+  return {week: Math.ceil((((dt-start)/86400000)+1)/7), year: y};
+}
+
+function weekKey(monday) {
+  const {week,year} = getISOWeek(monday);
+  return `${year}-W${String(week).padStart(2,'0')}`;
+}
+
+function dataFor(wk) {
+  if(!data[wk]) data[wk]={};
+  return data[wk];
+}
+
+function notesFor(wk) {
+  if(!notes[wk]) notes[wk]={};
+  return notes[wk];
+}
+
+function cellKey(personId, dayIdx) { return `${personId}_${dayIdx}`; }
+
+// ── RENDER ──
+const DAY_NAMES = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+const DAY_SHORT = ['Pzt','Sal','Çrş','Per','Cum','Cmt','Paz'];
+
+
+// ── TÜRKİYE RESMİ TATİLLERİ (Haftalık) ──
+function getTRHolidaysH(year) {
+  var h = {};
+  function add(m, d, name) {
+    var key = year + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    h[key] = name;
+  }
+  add(1,1,'Yılbaşı'); add(4,23,'Ulusal Egemenlik'); add(5,1,'İşçi Bayramı');
+  add(5,19,'Gençlik Bayramı'); add(7,15,'Demokrasi Bayramı');
+  add(8,30,'Zafer Bayramı'); add(10,29,'Cumhuriyet Bayramı');
+  return h;
+}
+var DINI_H = {
+  '2024-04-10':'Ramazan','2024-04-11':'Ramazan','2024-04-12':'Ramazan',
+  '2025-03-30':'Ramazan','2025-03-31':'Ramazan','2025-04-01':'Ramazan',
+  '2026-03-20':'Ramazan','2026-03-21':'Ramazan','2026-03-22':'Ramazan',
+  '2027-03-09':'Ramazan','2027-03-10':'Ramazan','2027-03-11':'Ramazan',
+  '2024-06-16':'Kurban','2024-06-17':'Kurban','2024-06-18':'Kurban','2024-06-19':'Kurban',
+  '2025-06-06':'Kurban','2025-06-07':'Kurban','2025-06-08':'Kurban','2025-06-09':'Kurban',
+  '2026-05-27':'Kurban','2026-05-28':'Kurban','2026-05-29':'Kurban','2026-05-30':'Kurban',
+  '2027-05-17':'Kurban','2027-05-18':'Kurban','2027-05-19':'Kurban','2027-05-20':'Kurban',
+};
+function isHolidayH(d) {
+  var y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+  var k = y+'-'+m+'-'+dd;
+  return getTRHolidaysH(y)[k] || DINI_H[k] || null;
+}
+
+function render() {
+  const days = getWeekDays(currentMonday);
+  const {week,year} = getISOWeek(currentMonday);
+  const wk = weekKey(currentMonday);
+  const d = dataFor(wk);
+  const todayStr = new Date().toDateString();
+
+  // Week label
+  const lastDay = days[5];
+  document.getElementById('weekLabel').textContent =
+    `${week}. Hafta — ${currentMonday.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'})} – ${lastDay.toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'})}`;
+
+  // ── THEAD ──
+  const thead = document.getElementById('tableHead');
+  let headHtml = '<tr><th class="th-name">KİŞİ</th>';
+  days.forEach((day,i) => {
+    const isToday = day.toDateString()===todayStr;
+    const hol = isHolidayH(day);
+    const holTag = hol ? '<div class="day-holiday-name">' + hol + '</div>' : '';
+    headHtml += '<th' + (hol ? ' class="th-holiday"' : '') + '>'
+      + '<div class="day-header' + (isToday?' today':'') + '">'
+      + '<div class="day-name">' + DAY_SHORT[i] + '</div>'
+      + '<div class="day-date">' + day.getDate() + '</div>'
+      + holTag
+      + '</div></th>';
+  });
+  headHtml += '</tr>';
+  thead.innerHTML = headHtml;
+
+  // ── TBODY ──
+  const tbody = document.getElementById('tableBody');
+  let bodyHtml = '';
+
+  PERSONS.forEach(p => {
+    const roleTag = p.role ? '<div class="person-role">' + p.role + '</div>' : '';
+    bodyHtml += '<tr><td class="name-cell"><div class="person-name">' + p.name + '</div>' + roleTag + '</td>';
+    days.forEach((_,i) => {
+      const ck = cellKey(p.id, i);
+      const entries = d[ck] || [];
+      let cellContent = '';
+      const cu = window._currentUser;
+      const canEditRow = cu && (cu.role === 'admin' || cu.id === p.id);
+      entries.forEach(function(e, ei) {
+        const typeClass = e.type || 'other';
+        const delBtn = canEditRow
+          ? '<button class="chip-del" onclick="H.deleteEntry(\'' + p.id + '\',' + i + ',' + ei + ',event)">✕</button>'
+          : '';
+        const editAttr = canEditRow ? ' ondblclick="H.openModal(\'' + p.id + '\',' + i + ',' + ei + ')"  title="Düzenlemek için çift tıklayın"' : '';
+        cellContent += '<div class="entry-chip ' + typeClass + '"' + editAttr + '>'
+          + '<div class="entry-count">' + (e.count||'') + '</div>'
+          + '<div class="entry-desc">' + (e.desc||'') + '</div>'
+          + delBtn + '</div>';
+      });
+      if(canEditRow){
+        cellContent += '<div class="add-entry-btn" onclick="H.openModal(\'' + p.id + '\',' + i + ')">+ ekle</div>';
+      }
+      bodyHtml += '<td class="day-cell' + (entries.length?' has-entry':'') + '">' + cellContent + '</td>';
+    });
+    bodyHtml += '</tr>';
+  });
+
+  // Totals row
+  bodyHtml += '<tr class="total-row"><td class="name-cell">TOPLAM</td>';
+  days.forEach((_,i) => {
+    let total = 0;
+    PERSONS.forEach(p => {
+      const ck = cellKey(p.id, i);
+      (d[ck]||[]).forEach(e => { total += parseInt(e.count)||0; });
+    });
+    const cap = 13;
+    const capClass = total >= cap ? (total > cap ? 'over' : 'warn') : '';
+    const capLabel = total > cap ? `+${total - cap} fazla` : (total === cap ? 'kapasite dolu' : 'araç');
+    bodyHtml += `<td class="total-cell ${capClass}">
+      <div class="total-num ${capClass}">${total||'—'}</div>
+      <div class="total-lbl">${total ? capLabel : ''}</div>
+    </td>`;
+  });
+  bodyHtml += '</tr>';
+
+  tbody.innerHTML = bodyHtml;
+
+  // ── NOTES GRID ──
+  renderNotes(days, wk);
+}
+
+function renderNotes(days, wk) {
+  const n = notesFor(wk);
+  const grid = document.getElementById('notesGrid');
+  const cols = days.length;
+
+  // Set dynamic column count
+  grid.style.gridTemplateColumns = '150px repeat(' + cols + ', 1fr)';
+
+  // Header row
+  let html = '<div class="notes-day-head" style="border-right:1px solid var(--border)"></div>';
+  days.forEach((day, i) => {
+    const isLast = i === cols - 1;
+    const hol2 = isHolidayH(day);
+    const holStyle = hol2 ? 'color:#dc2626;background:#fff1f2;' : '';
+    html += '<div class="notes-day-head" style="' + holStyle + (isLast ? 'border-right:none' : '') + '">' + DAY_SHORT[i] + ' ' + day.getDate() + '</div>';
+  });
+
+  // Notes rows
+  const noteRows = [
+    { key:'aciklama', label:'AÇIKLAMALAR' },
+    { key:'onay',     label:'ONAYLAR' },
+    { key:'konteyner',label:'KONTEYNER' },
+  ];
+
+  noteRows.forEach((row, ri) => {
+    const isLastRow = ri === noteRows.length - 1;
+    html += `<div class="notes-label" style="${isLastRow ? 'border-bottom:none' : ''}">${row.label}</div>`;
+    days.forEach((_, i) => {
+      const isLast = i === cols - 1;
+      const val = (n[i] && n[i][row.key]) || '';
+      html += `<div class="notes-cell" style="${isLast ? 'border-right:none;' : ''}${isLastRow ? 'border-bottom:none;' : ''}">
+        <textarea placeholder="..." rows="2" onchange="H.saveNote('${row.key}',${i},this.value)">${val}</textarea>
+      </div>`;
+    });
+  });
+
+  grid.innerHTML = html;
+}
+
+// ── NAVIGATION ──
+function changeWeek(dir) {
+  currentMonday = new Date(currentMonday);
+  currentMonday.setDate(currentMonday.getDate() + dir*7);
+  render();
+}
+
+function goToday() {
+  currentMonday = getMonday(new Date());
+  render();
+}
+
+// ── MODAL ──
+function openModal(personId, dayIdx, editIdx) {
+  const isEdit = editIdx !== undefined && editIdx !== null;
+  modalCtx = {personId, dayIdx, editIdx: isEdit ? editIdx : null};
+  const days = getWeekDays(currentMonday);
+  const person = PERSONS.find(p=>p.id===personId);
+  document.getElementById('modalTitle').textContent = isEdit ? 'Kayıt Düzenle' : 'Kayıt Ekle';
+  document.getElementById('modalSub').textContent =
+    `${person.name}  ·  ${DAY_NAMES[dayIdx]}, ${days[dayIdx].toLocaleDateString('tr-TR',{day:'2-digit',month:'long'})}`;
+  document.getElementById('fCount').classList.remove('error');
+  document.getElementById('fDesc').classList.remove('error');
+  document.querySelectorAll('.type-opt').forEach(el => el.classList.remove('sel-imo','sel-imosuz','sel-ithalat','sel-other','type-error'));
+
+  if(isEdit) {
+    const wk = weekKey(currentMonday);
+    const d = dataFor(wk);
+    const ck = cellKey(personId, dayIdx);
+    const entry = (d[ck] || [])[editIdx];
+    if(entry) {
+      document.getElementById('fCount').value = entry.count || '';
+      document.getElementById('fDesc').value = entry.desc || '';
+      selectedType = entry.type || null;
+      if(selectedType) selectType(selectedType);
+    }
+  } else {
+    document.getElementById('fCount').value = '';
+    document.getElementById('fDesc').value = '';
+    selectedType = null;
+  }
+  document.getElementById('overlay').classList.add('active');
+  setTimeout(()=>document.getElementById('fCount').focus(), 80);
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('active'); }
+function handleOverlay(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function selectType(t) {
+  selectedType = t;
+  document.querySelectorAll('.type-opt').forEach(el => {
+    el.className = 'type-opt';
+    if(el.dataset.type===t) el.classList.add('sel-' + t);
+  });
+}
+
+function saveEntry() {
+  const count = document.getElementById('fCount').value.trim();
+  const desc  = document.getElementById('fDesc').value.trim();
+  let valid = true;
+
+  // Tür zorunlu
+  if(!selectedType) {
+    document.querySelectorAll('.type-opt').forEach(el => el.classList.add('type-error'));
+    valid = false;
+  }
+  // Sayı zorunlu
+  if(!count) {
+    document.getElementById('fCount').classList.add('error');
+    if(valid) document.getElementById('fCount').focus();
+    valid = false;
+  }
+  // Açıklama zorunlu
+  if(!desc) {
+    document.getElementById('fDesc').classList.add('error');
+    if(valid) document.getElementById('fDesc').focus();
+    valid = false;
+  }
+  if(!valid) return;
+
+  const wk = weekKey(currentMonday);
+  const d  = dataFor(wk);
+  const ck = cellKey(modalCtx.personId, modalCtx.dayIdx);
+  if(!d[ck]) d[ck] = [];
+  if(modalCtx.editIdx !== null && modalCtx.editIdx !== undefined) {
+    // Edit existing
+    d[ck][modalCtx.editIdx] = { count, desc, type: selectedType };
+  } else {
+    // Add new
+    d[ck].push({ count, desc, type: selectedType });
+  }
+  closeModal();
+  render();
+  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+}
+
+function deleteEntry(personId, dayIdx, entryIdx, e) {
+  const cu = window._currentUser;
+  if(!cu || (cu.role !== 'admin' && cu.id !== personId)) return;
+  e.stopPropagation();
+  const wk = weekKey(currentMonday);
+  const d  = dataFor(wk);
+  const ck = cellKey(personId, dayIdx);
+  if(d[ck]) { d[ck].splice(entryIdx,1); if(d[ck].length===0) delete d[ck]; }
+  render();
+  var wk2 = weekKey(currentMonday);
+  if (window.DB) window.DB.saveWeeklyWeek(wk2, JSON.parse(JSON.stringify(dataFor(wk2))));
+}
+
+function saveNote(key, dayIdx, value) {
+  const wk = weekKey(currentMonday);
+  const n  = notesFor(wk);
+  if(!n[dayIdx]) n[dayIdx] = {};
+  n[dayIdx][key] = value;
+  if (window.DB) window.DB.saveNoteWeek(wk, JSON.parse(JSON.stringify(notesFor(wk))));
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if(!document.getElementById('overlay').classList.contains('active')) return;
+  if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); saveEntry(); }
+  if(e.key==='Escape') closeModal();
+});
+
+/* deferred */
+
+function setData(d) { data = d; }
+function setNotes(n) { notes = n; }
+function setPersons(list) { PERSONS = list.map(function(p) { return { id: p.id||"", name: p.name||"", role: p.role||"" }; }); }
+
+window.H = {
+  changeWeek: changeWeek,
+  goToday: goToday,
+  handleOverlay: handleOverlay,
+  selectType: selectType,
+  closeModal: closeModal,
+  saveEntry: saveEntry,
+  deleteEntry: deleteEntry,
+  openModal: openModal,
+  saveNote: saveNote,
+  render: render,
+  openAdmin: openAdmin,
+  closeAdmin: closeAdmin,
+  handleAdminOverlay: handleAdminOverlay,
+  editPerson: editPerson,
+  cancelEdit: cancelEdit,
+  savePerson: savePerson,
+  deletePerson: deletePerson,
+  addPerson: addPerson,
+  setData: setData,
+  setNotes: setNotes,
+  setPersons: setPersons
+};
+
+})();
+
+/* == LAUNCHER == */
+var randevuInited = false;
+var haftalikInited = false;
+
+// ── APP NAVIGATION ──
+function openApp(app) {
+  if(!window._currentUser) {
+    document.getElementById('launcher').classList.add('active');
+    return;
+  }
+  document.getElementById('launcher').classList.remove('active');
+  document.getElementById('shell-randevu').classList.toggle('active', app === 'randevu');
+  document.getElementById('shell-haftalik').classList.toggle('active', app === 'haftalik');
+
+  if (app === 'randevu') {
+    document.querySelectorAll('#shell-randevu .page').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('homePage').classList.add('active');
+    if (!randevuInited) { window.R.initCalendar(); randevuInited = true; }
+  }
+  if (app === 'haftalik') {
+    if (!haftalikInited) {
+      haftalikInited = true;
+      if (window.DB) {
+        Promise.all([
+          window.DB.loadWeeklyData(),
+          window.DB.loadNotes(),
+          window.DB.loadPersons()
+        ]).then(function(results) {
+          if (results[0]) window.H.setData(results[0]);
+          if (results[1]) window.H.setNotes(results[1]);
+          if (results[2]) window.H.setPersons(results[2]);
+          window.H.render();
+        }).catch(function() { window.H.render(); });
+      } else {
+        window.H.render();
+      }
+    }
+  }
+  injectNavButtons(app);
+}
+
+function goLauncher() {
+  document.getElementById('launcher').classList.add('active');
+  document.getElementById('shell-randevu').classList.remove('active');
+  document.getElementById('shell-haftalik').classList.remove('active');
+}
+
+function switchApp() {
+  var isRandevu = document.getElementById('shell-randevu').classList.contains('active');
+  openApp(isRandevu ? 'haftalik' : 'randevu');
+}
+
+function injectNavButtons(app) {
+  var header = app === 'randevu'
+    ? document.querySelector('#shell-randevu .app-header')
+    : document.querySelector('#shell-haftalik .header');
+  if (!header) return;
+  header.querySelectorAll('.nav-back-btn,.nav-switch-btn,.current-user-chip').forEach(function(el) { el.remove(); });
+
+  var backBtn = document.createElement('button');
+  backBtn.className = 'nav-back-btn';
+  backBtn.innerHTML = '⌂ Ana Sayfa';
+  backBtn.onclick = goLauncher;
+
+  var switchBtn = document.createElement('button');
+  switchBtn.className = 'nav-switch-btn';
+  switchBtn.innerHTML = app === 'randevu' ? '📋 Haftalık Plan' : '📅 Randevu';
+  switchBtn.onclick = switchApp;
+
+  var rightDiv = header.querySelector('.header-right');
+  if (rightDiv) {
+    rightDiv.prepend(switchBtn);
+    rightDiv.prepend(backBtn);
+    if (window._currentUser) {
+      var uChip = document.createElement('div');
+      uChip.className = 'current-user-chip';
+      var dotColor = window._currentUser.role==='admin'?'#2563eb':window._currentUser.role==='guest'?'#9ca3af':'#16a34a';
+      uChip.innerHTML = '<span class="cu-dot" style="background:'+dotColor+'"></span>' + window._currentUser.name;
+      uChip.title = 'Kullanıcıyı değiştir';
+      uChip.onclick = changeUser;
+      rightDiv.appendChild(uChip);
+    }
+    updateAdminBtn();
+  }
+}
+
+// ── USER MANAGEMENT ──
+var SPECIAL_USERS = [
+  { id:'admin',   name:'Admin',   role:'admin', initials:'AD' },
+  { id:'misafir', name:'Misafir', role:'guest', initials:'MI' },
+];
+
+function getInitials2(name) {
+  return (name||'').split(' ').map(function(w){ return w[0]||''; }).join('').slice(0,2).toUpperCase();
+}
+
+function getAllUsers() {
+  var persons = (window._personsCache || []).map(function(p) {
+    return { id: p.id, name: p.name, role: 'user', initials: getInitials2(p.name), roleLabel: p.role||'' };
+  });
+  return SPECIAL_USERS.concat(persons);
+}
+
+function renderUserPicker() {
+  var grid = document.getElementById('userPickerGrid');
+  if (!grid) return;
+  var users = getAllUsers();
+  grid.innerHTML = users.map(function(u) {
+    var avClass = u.role==='admin' ? 'up-admin' : u.role==='guest' ? 'up-guest' : 'up-person';
+    var badge = u.role==='admin' ? 'ADMİN' : u.role==='guest' ? 'MİSAFİR' : (u.roleLabel || 'KULLANICI');
+    return '<div class="up-item" data-uid="'+u.id+'" data-uname="'+u.name+'" data-urole="'+u.role+'" data-uinit="'+u.initials+'" onclick="handleUserItemClick(this)">'
+      + '<div class="up-avatar '+avClass+'">'+u.initials+'</div>'
+      + '<div class="up-info"><div class="up-name">'+u.name+'</div><div class="up-role">'+badge+'</div></div>'
+      + '<div class="up-arrow">→</div>'
+      + '</div>';
+  }).join('');
+}
+
+function handleUserItemClick(el) {
+  if(el.dataset.urole === 'admin') {
+    // Store pending user data, show password modal
+    window._pendingAdmin = { id: el.dataset.uid, name: el.dataset.uname, role: el.dataset.urole, initials: el.dataset.uinit };
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdError').textContent = '';
+    document.getElementById('pwdInput').classList.remove('error');
+    document.getElementById('pwdOverlay').classList.add('active');
+    setTimeout(function(){ document.getElementById('pwdInput').focus(); }, 80);
+  } else {
+    selectUser(el.dataset.uid, el.dataset.uname, el.dataset.urole, el.dataset.uinit);
+  }
+}
+
+function checkAdminPwd() {
+  var pwd = document.getElementById('pwdInput').value;
+  if(pwd === 'Admin') {
+    document.getElementById('pwdOverlay').classList.remove('active');
+    var u = window._pendingAdmin;
+    selectUser(u.id, u.name, u.role, u.initials);
+  } else {
+    var inp = document.getElementById('pwdInput');
+    inp.classList.add('error');
+    document.getElementById('pwdError').textContent = 'Hatalı parola, tekrar deneyin.';
+    inp.value = '';
+    setTimeout(function(){ inp.focus(); }, 50);
+  }
+}
+
+function selectUser(id, name, role, initials) {
+  window._currentUser = { id: id, name: name, role: role, initials: initials };
+  document.getElementById('userPickerWrap').style.display = 'none';
+  document.getElementById('appCardsSection').style.display = '';
+
+  var dotColor = role==='admin' ? '#2563eb' : role==='guest' ? '#9ca3af' : '#16a34a';
+  var roleLabel = role==='admin' ? 'Admin' : role==='guest' ? 'Misafir' : 'Kullanıcı';
+  document.getElementById('selectedUserBar').innerHTML =
+    '<div class="sel-user-pill">'
+    + '<div style="width:9px;height:9px;border-radius:50%;background:'+dotColor+';flex-shrink:0"></div>'
+    + '<span style="font-weight:700;color:#181c2e">'+name+'</span>'
+    + '<span style="color:#b2b9cc;font-size:11px">'+roleLabel+'</span>'
+    + '</div>'
+    + '<span class="sub" onclick="changeUser()">değiştir</span>';
+
+  if (role === 'guest') {
+    document.getElementById('readonlyBadge').classList.add('show');
+    setTimeout(function(){ document.getElementById('readonlyBadge').classList.remove('show'); }, 3000);
+  }
+  updateAdminBtn();
+}
+
+function changeUser() {
+  window._currentUser = null;
+  document.getElementById('userPickerWrap').style.display = '';
+  document.getElementById('appCardsSection').style.display = 'none';
+  randevuInited = false;
+  haftalikInited = false;
+  document.getElementById('shell-randevu').classList.remove('active');
+  document.getElementById('shell-haftalik').classList.remove('active');
+  document.getElementById('launcher').classList.add('active');
+}
+
+function updateAdminBtn() {
+  var wrapper = document.getElementById('adminBtnWrapper');
+  if(!wrapper) return;
+  wrapper.innerHTML = (window._currentUser && window._currentUser.role === 'admin')
+    ? '<button class="hbtn" onclick="H.openAdmin()">⚙ Kişiler</button>' : '';
+}
+
+function loadPersonsForUserList() {
+  if (window.DB) {
+    window.DB.loadPersons().then(function(list) {
+      if (list) window._personsCache = list;
+      renderUserPicker();
+    });
+  }
+}
+
+function showUserSelect() { changeUser(); }
+
+// ── INIT ──
+document.getElementById('card-randevu').addEventListener('click', function() { openApp('randevu'); });
+document.getElementById('card-haftalik').addEventListener('click', function() { openApp('haftalik'); });
+renderUserPicker();
+window.addEventListener('firebaseReady', function() { loadPersonsForUserList(); });
+
+setInterval(function() {
+  if (document.getElementById('shell-randevu').classList.contains('active')) {
+    var sched = document.getElementById('schedulePage');
+    if (sched && sched.classList.contains('active')) {
+      window.R.render('adr'); window.R.render('normal');
+    }
+  }
+}, 60000);
+</script>
+
+<!-- ADMIN PASSWORD MODAL -->
+<div class="pwd-overlay" id="pwdOverlay">
+  <div class="pwd-box">
+    <div class="pwd-icon">🔐</div>
+    <h3>Admin Girişi</h3>
+    <p>Devam etmek için parolayı girin</p>
+    <input class="pwd-input" type="password" id="pwdInput" placeholder="••••••" maxlength="20"
+      onkeydown="if(event.key==='Enter')checkAdminPwd()" oninput="this.classList.remove('error');document.getElementById('pwdError').textContent=''">
+    <div class="pwd-error" id="pwdError"></div>
+    <button class="pwd-btn" onclick="checkAdminPwd()">Giriş Yap</button>
+  </div>
+</div>
+
+</body>
+</html>
