@@ -1096,6 +1096,249 @@ th:not(:last-child), td:not(:last-child) {
   75%{transform:translateX(6px)}
 }
 
+
+  .cal-day { width: 28px; height: 28px; font-size: 11px; }
+  .cal-weekday { width: 28px; font-size: 9px; }
+  .chip { font-size: 10px; padding: 3px 7px; }
+  .schedule-body { padding: 0; }
+  .home-body { padding: 12px; }
+}
+
+
+/* ══════════════════════════════════════════════════
+   MOBİL RESPONSIVE
+══════════════════════════════════════════════════ */
+
+/* ── LAUNCHER ── */
+@media (max-width: 600px) {
+  .launcher { padding: 24px 16px; justify-content: flex-start; padding-top: 48px; }
+  .launcher h1 { font-size: 22px; }
+  .launcher-sub { margin-bottom: 28px; font-size: 12px; }
+  .app-cards { flex-direction: column; gap: 12px; width: 100%; }
+  .app-card { width: 100%; padding: 22px 18px; display: flex; align-items: center; gap: 16px; text-align: left; }
+  .card-icon { margin: 0; flex-shrink: 0; width: 46px; height: 46px; font-size: 22px; }
+  .card-arrow { margin-top: 0; margin-left: auto; }
+  .user-picker-wrap { max-width: 100%; padding: 0; }
+  .user-picker-grid { max-height: 55vh; max-width: 100%; overflow-y: auto; }
+  .up-item { padding: 10px 12px; }
+  .up-name { font-size: 13px; }
+  .selected-user-bar { flex-wrap: wrap; justify-content: center; gap: 8px; }
+}
+
+/* ── RANDEVU: HEADER ── */
+@media (max-width: 600px) {
+  .app-header {
+    padding: 8px 12px;
+    height: auto;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .logo-text { font-size: 13px; }
+  .logo-icon { width: 28px; height: 28px; font-size: 14px; }
+
+  /* Gizle: "Takvime Dön" buton metnini kısalt */
+  .header-right {
+    gap: 5px;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow: hidden;
+  }
+  .header-right button { font-size: 11px; padding: 5px 8px; white-space: nowrap; }
+  .chip { font-size: 10px; padding: 4px 7px; white-space: nowrap; }
+  .chip.date { display: none; } /* tarih chip'i gizle, zaten görünüyor */
+  .current-user-chip { font-size: 11px; padding: 4px 9px; }
+  .nav-back-btn, .nav-switch-btn { font-size: 11px; padding: 5px 8px; }
+}
+
+/* ── RANDEVU: HOME / TAKVİM ── */
+@media (max-width: 600px) {
+  .home-body { padding: 12px; }
+  .home-hero { margin-bottom: 16px; }
+  .home-hero h1 { font-size: 20px; }
+  .home-hero p { font-size: 12px; }
+  .calendar-card { padding: 10px; }
+  .cal-header { margin-bottom: 8px; }
+  .cal-title { font-size: 14px; }
+  .cal-nav button { width: 28px; height: 28px; font-size: 16px; }
+  .cal-weekday { font-size: 10px; width: 34px; height: 28px; }
+  .cal-week-num { font-size: 9px; width: 20px; padding: 0 2px; }
+  .cal-day { width: 34px; height: 34px; font-size: 12px; border-radius: 9px; }
+  .home-stats { gap: 6px; }
+  .stat-card { padding: 10px 8px; flex: 1; min-width: 0; }
+  .stat-card .num { font-size: 22px; }
+  .stat-card .lbl { font-size: 10px; }
+  .open-schedule-btn { width: 100%; padding: 12px; font-size: 13px; }
+}
+
+/* ── RANDEVU: SCHEDULE (SLOT) EKRANI ── */
+@media (max-width: 600px) {
+  .schedule-body {
+    display: flex !important;
+    flex-direction: column;
+    overflow: visible;
+  }
+  .ramp-col {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    overflow: visible;
+  }
+  .ramp-col:last-child { border-bottom: none; }
+  .timeline { overflow-y: visible; max-height: none; padding: 8px; }
+  .ramp-head { padding: 10px 12px; }
+  .ramp-head h2 { font-size: 13px; }
+  .ramp-meta { font-size: 10px; }
+  .ramp-count .big { font-size: 18px; }
+  .slot { min-height: 48px; }
+  .slot-time-col { min-width: 50px; padding: 0 6px; }
+  .t-start, .t-end { font-size: 10px; }
+  .slot-body { padding: 8px 10px; }
+  .booking-plate { font-size: 13px; }
+  .booking-detail { font-size: 11px; }
+  .del-btn { width: 24px; height: 24px; font-size: 11px; }
+  .bottom-bar { padding: 8px 12px; font-size: 12px; }
+}
+
+/* ── RANDEVU: MODAL ── */
+@media (max-width: 600px) {
+  #modalOverlay .modal {
+    width: calc(100vw - 16px);
+    margin: 8px;
+    max-height: 92vh;
+    overflow-y: auto;
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
+  .modal-head h3 { font-size: 15px; }
+  .modal-meta { font-size: 11px; }
+  .form-group label { font-size: 10px; }
+  .form-group input, .form-group textarea { font-size: 14px; padding: 10px 12px; }
+  .modal-actions { gap: 8px; }
+  .modal-actions button { padding: 11px; font-size: 13px; }
+}
+
+/* ── HAFTALİK: HEADER ── */
+@media (max-width: 600px) {
+  .header {
+    padding: 0 10px;
+    height: auto;
+    min-height: 54px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .header-left { gap: 8px; flex-shrink: 0; }
+  .app-title { font-size: 12px; }
+  .app-sub { display: none; }
+  .logo-mark { width: 28px; height: 28px; font-size: 14px; border-radius: 7px; }
+  .header-center {
+    padding: 5px 8px;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .week-label { font-size: 10px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+  .week-nav { width: 26px; height: 26px; font-size: 14px; }
+  .header-right { gap: 5px; flex-shrink: 0; }
+  .hbtn { font-size: 11px; padding: 5px 9px; }
+  .hbtn-icon-only span.btn-label { display: none; }
+}
+
+/* ── HAFTALİK: TABLE ── */
+@media (max-width: 600px) {
+  .main {
+    padding: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .week-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .week-table { min-width: 580px; }
+  .th-name { padding: 10px 8px; font-size: 10px; min-width: 80px; }
+  .name-cell { min-width: 80px; padding: 8px; }
+  .person-name { font-size: 11px; }
+  .person-role { font-size: 9px; }
+  .day-cell { padding: 4px; }
+  .day-header { padding: 8px 4px 6px; }
+  .day-name { font-size: 9px; letter-spacing: 0; }
+  .day-date { font-size: 15px; }
+  .day-header.today .day-date { width: 26px; height: 26px; font-size: 13px; }
+  .entry-chip { padding: 4px 6px; gap: 2px; }
+  .entry-count { font-size: 14px; }
+  .entry-desc { font-size: 9px; }
+  .add-entry-btn { font-size: 10px; padding: 3px 5px; }
+  .day-total-cell { padding: 6px 4px; }
+  .total-num { font-size: 16px; }
+  .total-lbl { font-size: 9px; }
+}
+
+/* ── HAFTALİK: NOTLAR ── */
+@media (max-width: 600px) {
+  .notes-section { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0 8px; }
+  .notes-grid { min-width: 580px; }
+  .notes-title { font-size: 11px; padding: 10px 12px 8px; }
+  .notes-row-label { font-size: 10px; padding: 8px 8px; }
+  .notes-cell { padding: 6px; font-size: 11px; }
+  .notes-day-head { font-size: 10px; padding: 7px 4px; }
+}
+
+/* ── HAFTALİK: MODAL ── */
+@media (max-width: 600px) {
+  #overlay .modal {
+    width: calc(100vw - 16px);
+    margin: 8px;
+    padding: 20px 16px;
+    border-radius: 18px;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  #overlay .modal h3 { font-size: 16px; }
+  .modal-sub { font-size: 11px; }
+  .fg label { font-size: 10px; }
+  .type-row { gap: 6px; flex-wrap: wrap; }
+  .type-opt { font-size: 12px; padding: 7px 10px; flex: 1; text-align: center; min-width: calc(50% - 3px); }
+  .mbtn-cancel, .mbtn-save { padding: 11px; font-size: 13px; }
+}
+
+/* ── ADMIN PANELİ ── */
+@media (max-width: 600px) {
+  .admin-overlay .admin-panel {
+    border-radius: 18px 18px 0 0;
+    max-height: 92vh;
+    bottom: 0;
+    position: fixed;
+    left: 0; right: 0;
+    margin: 0;
+  }
+  .admin-head { padding: 16px 16px 10px; }
+  .admin-body { padding: 10px 14px; }
+  .person-item { padding: 8px 10px; gap: 8px; }
+  .person-name-disp { font-size: 12px; }
+  .person-role-disp { font-size: 10px; }
+  .add-form-row { flex-direction: column; gap: 6px; }
+  .add-form-row input { width: 100%; }
+  .btn-add-person { width: 100%; margin-top: 2px; }
+}
+
+/* ── PAROLA MODAL ── */
+@media (max-width: 600px) {
+  .pwd-overlay .pwd-box {
+    width: calc(100vw - 32px);
+    margin: 16px;
+    padding: 28px 20px;
+  }
+}
+
+/* ── KÜÇÜK EKRANLAR (iPhone SE vb.) ── */
+@media (max-width: 380px) {
+  .launcher h1 { font-size: 18px; }
+  .cal-day { width: 30px; height: 30px; font-size: 11px; }
+  .cal-weekday { width: 30px; }
+  .chip.adr, .chip.normal { display: none; }
+  .week-table { min-width: 520px; }
+  .notes-grid { min-width: 520px; }
+}
+
 </style>
 </head>
 <body>
