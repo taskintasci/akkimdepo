@@ -1250,38 +1250,36 @@ input, textarea, select {
   .modal-actions button { padding: 12px; font-size: 13px; }
 
   /* ── HAFTALİK: HEADER ── */
-  .header {
-    padding: 6px 10px !important;
-    height: auto !important;
-    min-height: 52px;
-    flex-wrap: nowrap !important;
-    justify-content: space-between;
+  .header { padding: 0 !important; }
+  .header-top-row {
+    padding: 8px 12px 6px !important;
+    flex-wrap: nowrap;
+    gap: 6px;
   }
-  .header-left { gap: 8px; flex-shrink: 0; min-width: 0; }
-  .logo-mark { width: 28px !important; height: 28px !important; font-size: 14px !important; flex-shrink: 0; }
+  .header-bottom-row { padding: 0 12px 8px !important; }
+  .header-left { gap: 8px; flex-shrink: 0; }
+  .logo-mark { width: 26px !important; height: 26px !important; font-size: 13px !important; flex-shrink: 0; }
   .app-title { font-size: 12px; white-space: nowrap; }
   .app-sub { display: none !important; }
+  .header-right { gap: 4px !important; flex-wrap: nowrap; flex-shrink: 0; }
+  .hbtn { font-size: 11px !important; padding: 5px 7px !important; white-space: nowrap; }
+  .nav-back-btn, .nav-switch-btn { font-size: 11px !important; padding: 5px 7px !important; white-space: nowrap; }
+  .current-user-chip { font-size: 11px !important; padding: 4px 8px !important; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Hafta navigasyonu — ortada küçük */
+  /* Hafta navigasyonu — tam genişlik alt satır */
   .header-center {
-    padding: 4px 8px !important;
-    flex-shrink: 1;
-    min-width: 0;
-    gap: 4px !important;
+    padding: 6px 0 !important;
+    gap: 8px !important;
+    justify-content: center;
+    width: 100%;
   }
   .week-label {
-    font-size: 10px !important;
+    font-size: 12px !important;
     min-width: 0 !important;
-    max-width: 110px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    text-align: center;
+    flex: 1;
   }
-  .week-nav { width: 26px !important; height: 26px !important; font-size: 14px !important; }
-
-  /* Sağ butonlar */
-  .header-right { flex-shrink: 0; gap: 4px !important; }
-  .hbtn { font-size: 11px !important; padding: 5px 8px !important; white-space: nowrap; }
+  .week-nav { width: 30px !important; height: 30px !important; font-size: 16px !important; }
 
   /* ── HAFTALİK: TABLO ── */
   .main { padding: 0 !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1362,6 +1360,23 @@ input, textarea, select {
   .week-label { max-width: 85px; }
 }
 
+
+/* ── HAFTALİK HEADER — 2 satır yapısı ── */
+.header { flex-direction: column; height: auto; padding: 0; }
+.header-top-row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 10px 20px 6px;
+  gap: 12px;
+}
+.header-bottom-row {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 0 20px 10px;
+  border-top: 1px solid var(--border);
+}
+.header-bottom-row .header-center {
+  border: none; background: transparent; padding: 8px 0;
+}
+
 </style>
 </head>
 <body>
@@ -1371,6 +1386,7 @@ input, textarea, select {
 
 <div class="launcher active" id="launcher">
   <div class="launcher-logo">🏭</div>
+  <div style="position:absolute;top:12px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#b2b9cc;letter-spacing:.5px;">v1.4</div>
   <h1>Akkim Depolama Merkezi<br><span style="color:var(--accent)">İthalat ve İhracat Planı</span></h1>
 
   <!-- USER PICKER -->
@@ -1532,24 +1548,26 @@ input, textarea, select {
 </div>
 
 <div class="app-shell" id="shell-haftalik">
-<header class="header">
-  <div class="header-left">
-    <div class="logo-mark">📋</div>
-    <div>
-      <div class="app-title">HAFTALIK PLAN</div>
-      <div class="app-sub" id="depotName">901 AKKİM DEPOLAMA MERKEZİ</div>
+<header class="header" id="haftalikHeader">
+  <div class="header-top-row">
+    <div class="header-left">
+      <div class="logo-mark">📋</div>
+      <div>
+        <div class="app-title">HAFTALIK PLAN</div>
+        <div class="app-sub" id="depotName">901 AKKİM DEPOLAMA MERKEZİ</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="hbtn" onclick="H.goToday()">Bu Hafta</button>
+      <span id="adminBtnWrapper"></span>
     </div>
   </div>
-
-  <div class="header-center">
-    <button class="week-nav" onclick="H.changeWeek(-1)">‹</button>
-    <div class="week-label" id="weekLabel">—</div>
-    <button class="week-nav" onclick="H.changeWeek(1)">›</button>
-  </div>
-
-  <div class="header-right">
-    <button class="hbtn" onclick="H.goToday()">Bu Hafta</button>
-    <span id="adminBtnWrapper"></span>
+  <div class="header-bottom-row">
+    <div class="header-center">
+      <button class="week-nav" onclick="H.changeWeek(-1)">‹</button>
+      <div class="week-label" id="weekLabel">—</div>
+      <button class="week-nav" onclick="H.changeWeek(1)">›</button>
+    </div>
   </div>
 </header>
 
@@ -2613,7 +2631,9 @@ function injectNavButtons(app) {
   switchBtn.innerHTML = app === 'randevu' ? '📋 Haftalık Plan' : '📅 Randevu';
   switchBtn.onclick = switchApp;
 
-  var rightDiv = header.querySelector('.header-right');
+  var rightDiv = app === 'haftalik'
+    ? header.querySelector('.header-top-row .header-right')
+    : header.querySelector('.header-right');
   if (rightDiv) {
     rightDiv.prepend(switchBtn);
     rightDiv.prepend(backBtn);
