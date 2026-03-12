@@ -2061,12 +2061,19 @@ function render(type) {
     }
   });
   cont.innerHTML=html;
-  // Touch drag init (randevu)
-  cont.querySelectorAll('.slot.booked[data-slot-type]').forEach(function(el) {
-    var sType = el.dataset.slotType;
-    var sIdx  = parseInt(el.dataset.slotIdx);
-    rTouchDragInit(el, sType, sIdx);
-  });
+  // Touch drag init (randevu) — sadece yetkili kullanıcıya
+  var cu_r = window._currentUser;
+  if (cu_r && cu_r.role !== 'guest') {
+    cont.querySelectorAll('.slot.booked[data-slot-type]').forEach(function(el) {
+      var sType = el.dataset.slotType;
+      var sIdx  = parseInt(el.dataset.slotIdx);
+      var bk = bookingsForDate(selectedDate)[sType] && bookingsForDate(selectedDate)[sType][sIdx];
+      var isOwner_r = bk && bk.createdBy && bk.createdBy === cu_r.name;
+      if (cu_r.role === 'admin' || isOwner_r) {
+        rTouchDragInit(el, sType, sIdx);
+      }
+    });
+  }
   updateSchedStats();
 }
 
@@ -2117,7 +2124,13 @@ function saveBooking() {
   if(!plate){document.getElementById('fieldPlate').classList.add('error');document.getElementById('fieldPlate').focus();valid=false;}
   if(!company){document.getElementById('fieldCompany').classList.add('error');if(valid)document.getElementById('fieldCompany').focus();valid=false;}
   if(!valid)return;
-  const creator = (window._currentUser && window._currentUser.role !== 'guest') ? window._currentUser.name : '';
+  // Yetki kontrolü: dolu slotu sadece admin veya sahibi düzenleyebilir
+  const cu_s = window._currentUser;
+  const existing = bookingsForDate(selectedDate)[modalCtx.type][modalCtx.idx];
+  if (existing && cu_s && cu_s.role !== 'admin' && existing.createdBy && existing.createdBy !== cu_s.name) {
+    closeModal(); return;
+  }
+  const creator = (cu_s && cu_s.role !== 'guest') ? cu_s.name : '';
   bookingsForDate(selectedDate)[modalCtx.type][modalCtx.idx]={plate,company,cargo,createdBy:creator};
   closeModal(); render(modalCtx.type); renderCalendar();
   if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
@@ -2644,9 +2657,10 @@ function dragLeave(e) {
 
 function dropEntry(e, targetPersonId, targetDayIdx) {
   e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
-  if (!_drag) return;
-  const { personId, dayIdx, entryIdx } = _drag;
+  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
+  const src = _drag || _touchDrag;
+  if (!src) return;
+  const { personId, dayIdx, entryIdx } = src;
   // Aynı hücreye bırakıldıysa işlem yapma
   if (personId === targetPersonId && dayIdx === targetDayIdx) { _drag = null; return; }
   const wk = weekKey(currentMonday);
@@ -2692,8 +2706,8 @@ function touchDragInit(el, personId, dayIdx, entryIdx) {
         + 'left:' + rect.left + 'px;top:' + rect.top + 'px;';
       document.body.appendChild(_touchClone);
       el.style.opacity = '0.3';
-    }, 400);
-  }, { passive: true });
+    }, 300);
+  }, { passive: false });
 
   el.addEventListener('touchmove', function(e) {
     if (!activated) {
