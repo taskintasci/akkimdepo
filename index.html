@@ -455,22 +455,27 @@ body {
 .main {
   flex: 1;
   padding: 20px 28px 28px;
+}
+
+/* ── SCROLL WRAPPER ── */
+.table-scroll {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
 }
 
 /* ── WEEK TABLE ── */
 .table-card {
-  width: 100%;
-  min-width: 960px;
   background: var(--surface);
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  margin-bottom: 20px;
+  min-width: 600px;
 }
 .week-table {
   width: 100%;
+  min-width: 600px;
   border-collapse: separate;
   border-spacing: 0;
   background: var(--surface);
@@ -526,6 +531,9 @@ body {
   letter-spacing: .5px;
   text-align: left;
   white-space: nowrap;
+  position: sticky;
+  left: 0;
+  z-index: 3;
 }
 
 th:not(:last-child), td:not(:last-child) {
@@ -546,6 +554,9 @@ th:not(:last-child), td:not(:last-child) {
   background: var(--bg);
   white-space: nowrap;
   min-width: 150px;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 .person-name {
@@ -1265,19 +1276,32 @@ input, textarea, select {
   /* ── HAFTALİK: HEADER ── */
   .header { padding: 0 !important; }
   .header-top-row {
-    padding: 8px 12px 6px !important;
-    flex-wrap: nowrap;
-    gap: 6px;
+    padding: 6px 10px !important;
+    flex-wrap: wrap;
+    gap: 4px;
   }
-  .header-bottom-row { padding: 0 12px 8px !important; }
-  .header-left { gap: 8px; flex-shrink: 0; }
+  .header-bottom-row { padding: 0 10px 8px !important; }
+
+  /* Logo — sadece ikon, yazı gizli */
+  .header-left { gap: 6px; flex-shrink: 0; }
   .logo-mark { width: 26px !important; height: 26px !important; font-size: 13px !important; flex-shrink: 0; }
   .app-title { font-size: 12px; white-space: nowrap; }
   .app-sub { display: none !important; }
-  .header-right { gap: 4px !important; flex-wrap: nowrap; flex-shrink: 0; }
-  .hbtn { font-size: 11px !important; padding: 5px 7px !important; white-space: nowrap; }
-  .nav-back-btn, .nav-switch-btn { font-size: 11px !important; padding: 5px 7px !important; white-space: nowrap; }
-  .current-user-chip { font-size: 11px !important; padding: 4px 8px !important; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Butonlar — küçük, sığmayan satır altına geçer */
+  .header-right {
+    gap: 4px !important;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: flex-end;
+  }
+  .hbtn { font-size: 10px !important; padding: 4px 7px !important; white-space: nowrap; }
+  .nav-back-btn { font-size: 10px !important; padding: 4px 7px !important; white-space: nowrap; }
+  .nav-switch-btn { font-size: 10px !important; padding: 4px 7px !important; white-space: nowrap; }
+  .current-user-chip {
+    font-size: 10px !important; padding: 3px 7px !important;
+    max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
 
   /* Hafta navigasyonu — tam genişlik alt satır */
   .header-center {
@@ -1295,11 +1319,13 @@ input, textarea, select {
   .week-nav { width: 30px !important; height: 30px !important; font-size: 16px !important; }
 
   /* ── HAFTALİK: TABLO ── */
-  .main { padding: 0 !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .table-card { min-width: 560px; }
+  .main { padding: 12px !important; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+  .table-card { min-width: unset; }
+  .week-table { min-width: 480px; }
   .week-table { width: 100%; }
-  .th-name { padding: 8px !important; font-size: 10px; min-width: 75px; }
-  .name-cell { min-width: 75px; padding: 8px !important; }
+  .th-name { padding: 8px !important; font-size: 10px; min-width: 70px; max-width: 70px; }
+  .name-cell { min-width: 70px; max-width: 70px; padding: 8px !important; white-space: normal; }
   .person-name { font-size: 11px; }
   .person-role { font-size: 9px; }
   .day-cell { padding: 4px !important; }
@@ -1404,6 +1430,35 @@ input, textarea, select {
 .slot.booked[draggable="true"]:active { cursor: grabbing; }
 .slot.booked.dragging { opacity: 0.35; }
 .slot.empty.drag-over { background: #eff4ff !important; outline: 2px dashed #2563eb; outline-offset: -2px; }
+
+
+/* ── CONFIRM MODAL ── */
+.confirm-overlay {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  background: rgba(10,15,35,.5); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.confirm-overlay.active { display: flex; }
+.confirm-box {
+  background: white; border-radius: 18px; padding: 28px 24px;
+  width: calc(100% - 48px); max-width: 320px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.2);
+  font-family: 'Syne', sans-serif; text-align: center;
+}
+.confirm-box p { font-size: 15px; font-weight: 600; color: #181c2e; margin-bottom: 20px; line-height: 1.4; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-cancel {
+  flex: 1; padding: 11px; border-radius: 10px;
+  border: 1.5px solid #e4e7ef; background: white;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: 'Syne', sans-serif; color: #788096;
+}
+.confirm-ok {
+  flex: 1; padding: 11px; border-radius: 10px;
+  border: none; background: #dc2626; color: white;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Syne', sans-serif;
+}
 
 </style>
 </head>
@@ -1600,12 +1655,14 @@ input, textarea, select {
 </header>
 
 <div class="main">
+<div class="table-scroll">
   <div class="table-card">
     <table class="week-table" id="weekTable">
       <thead id="tableHead"></thead>
       <tbody id="tableBody"></tbody>
     </table>
   </div>
+</div>
 </div>
 
 <!-- MODAL -->
@@ -2094,9 +2151,13 @@ function slotDrop(e, targetType, targetIdx) {
 
 function deleteBooking(type,idx,e) {
   e.stopPropagation();
-  delete bookingsForDate(selectedDate)[type][idx];
-  render(type); renderCalendar();
-  if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
+  const bk = bookingsForDate(selectedDate)[type][idx];
+  const label = bk ? bk.plate : 'bu randevu';
+  showConfirm(label + ' silinsin mi?', function() {
+    delete bookingsForDate(selectedDate)[type][idx];
+    render(type); renderCalendar();
+    if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
+  });
 }
 
 function clearRamp(type) {
@@ -2411,7 +2472,7 @@ function render() {
         cellContent += '<div class="add-entry-btn" onclick="H.openModal(\'' + p.id + '\',' + i + ')">+ ekle</div>';
       }
       const dropAttr = canEditRow ? ' ondragover="H.dragOver(event)" ondragleave="H.dragLeave(event)" ondrop="H.dropEntry(event,\'' + p.id + '\',' + i + ')"' : '';
-      bodyHtml += '<td class="day-cell' + (entries.length?' has-entry':'') + '"' + dropAttr + '>' + cellContent + '</td>';
+      bodyHtml += '<td class="day-cell' + (entries.length?' has-entry':'') + '"' + dropAttr + ' data-person-id="' + p.id + '" data-day-idx="' + i + '">' + cellContent + '</td>';
     });
     bodyHtml += '</tr>';
   });
@@ -2435,6 +2496,14 @@ function render() {
   bodyHtml += '</tr>';
 
   tbody.innerHTML = bodyHtml;
+
+  // Touch drag init
+  document.querySelectorAll('.entry-chip[draggable="true"]').forEach(function(el) {
+    var pid = el.closest('[data-person-id]') && el.closest('[data-person-id]').dataset.personId;
+    var di = el.closest('[data-day-idx]') && parseInt(el.closest('[data-day-idx]').dataset.dayIdx);
+    var ei = Array.from(el.parentNode.querySelectorAll('.entry-chip')).indexOf(el);
+    if (pid !== undefined && di !== undefined) touchDragInit(el, pid, di, ei);
+  });
 
   // ── NOTES GRID ──
   renderNotes(days, wk);
@@ -2497,8 +2566,65 @@ function dropEntry(e, targetPersonId, targetDayIdx) {
   if (!d[tgtKey]) d[tgtKey] = [];
   d[tgtKey].push(entry);
   _drag = null;
+  _touchDrag = null;
   render();
   if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+}
+
+
+// ── TOUCH DRAG (Haftalık Plan) ──
+var _touchDrag = null;
+var _touchClone = null;
+
+function touchDragInit(el, personId, dayIdx, entryIdx) {
+  el.addEventListener('touchstart', function(e) {
+    var t = e.touches[0];
+    _touchDrag = { personId, dayIdx, entryIdx, startX: t.clientX, startY: t.clientY, moved: false };
+    // Clone oluştur
+    _touchClone = el.cloneNode(true);
+    _touchClone.style.cssText = 'position:fixed;z-index:999;opacity:0.85;pointer-events:none;transform:scale(1.05);transition:none;width:' + el.offsetWidth + 'px;';
+    _touchClone.style.left = t.clientX + 'px';
+    _touchClone.style.top = t.clientY + 'px';
+    document.body.appendChild(_touchClone);
+    setTimeout(function(){ if(_touchDrag) el.style.opacity='0.35'; }, 0);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function(e) {
+    if (!_touchDrag) return;
+    e.preventDefault();
+    _touchDrag.moved = true;
+    var t = e.touches[0];
+    _touchClone.style.left = (t.clientX - 40) + 'px';
+    _touchClone.style.top = (t.clientY - 20) + 'px';
+    // Highlight drop target
+    document.querySelectorAll('.day-cell.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
+    var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (target) {
+      var cell = target.closest('.day-cell');
+      if (cell) cell.classList.add('drag-over');
+    }
+  }, { passive: false });
+
+  el.addEventListener('touchend', function(e) {
+    if (!_touchDrag) return;
+    el.style.opacity = '';
+    if (_touchClone) { _touchClone.remove(); _touchClone = null; }
+    document.querySelectorAll('.day-cell.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
+    if (!_touchDrag.moved) { _touchDrag = null; return; }
+    var t = e.changedTouches[0];
+    var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (target) {
+      var cell = target.closest('[data-person-id]');
+      if (cell) {
+        var tPersonId = cell.dataset.personId;
+        var tDayIdx = parseInt(cell.dataset.dayIdx);
+        H.dropEntry({ preventDefault: function(){} }, tPersonId, tDayIdx);
+        _touchDrag = null;
+        return;
+      }
+    }
+    _touchDrag = null;
+  });
 }
 
 // ── NAVIGATION ──
@@ -2604,10 +2730,14 @@ function deleteEntry(personId, dayIdx, entryIdx, e) {
   const wk = weekKey(currentMonday);
   const d  = dataFor(wk);
   const ck = cellKey(personId, dayIdx);
-  if(d[ck]) { d[ck].splice(entryIdx,1); if(d[ck].length===0) delete d[ck]; }
-  render();
-  var wk2 = weekKey(currentMonday);
-  if (window.DB) window.DB.saveWeeklyWeek(wk2, JSON.parse(JSON.stringify(dataFor(wk2))));
+  const entry = (d[ck] || [])[entryIdx];
+  const label = entry ? (entry.desc || 'bu kayıt') : 'bu kayıt';
+  showConfirm(label + ' silinsin mi?', function() {
+    if(d[ck]) { d[ck].splice(entryIdx,1); if(d[ck].length===0) delete d[ck]; }
+    render();
+    var wk2 = weekKey(currentMonday);
+    if (window.DB) window.DB.saveWeeklyWeek(wk2, JSON.parse(JSON.stringify(dataFor(wk2))));
+  });
 }
 
 function saveNote(key, dayIdx, value) {
@@ -2644,6 +2774,7 @@ window.H = {
   render: render,
   openAdmin: openAdmin,
   dragStart: dragStart,
+  touchDragInit: touchDragInit,
   dragOver: dragOver,
   dragLeave: dragLeave,
   dropEntry: dropEntry,
@@ -2747,6 +2878,23 @@ function injectNavButtons(app) {
     }
     updateAdminBtn();
   }
+}
+
+
+// ── CONFIRM MODAL ──
+var _confirmCb = null;
+function showConfirm(msg, cb) {
+  document.getElementById('confirmMsg').textContent = msg;
+  _confirmCb = cb;
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+function confirmOk() {
+  document.getElementById('confirmOverlay').classList.remove('active');
+  if (_confirmCb) { _confirmCb(); _confirmCb = null; }
+}
+function confirmCancel() {
+  document.getElementById('confirmOverlay').classList.remove('active');
+  _confirmCb = null;
 }
 
 // ── USER MANAGEMENT ──
@@ -2887,6 +3035,18 @@ setInterval(function() {
       onkeydown="if(event.key==='Enter')checkAdminPwd()" oninput="this.classList.remove('error');document.getElementById('pwdError').textContent=''">
     <div class="pwd-error" id="pwdError"></div>
     <button class="pwd-btn" onclick="checkAdminPwd()">Giriş Yap</button>
+  </div>
+</div>
+
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <p id="confirmMsg">Emin misiniz?</p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="confirmCancel()">İptal</button>
+      <button class="confirm-ok" onclick="confirmOk()">Sil</button>
+    </div>
   </div>
 </div>
 
