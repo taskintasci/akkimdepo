@@ -1460,6 +1460,15 @@ input, textarea, select {
   font-family: 'Syne', sans-serif;
 }
 
+
+/* ── DRAG ELEMENTS — metin seçimi engeli ── */
+.entry-chip, .slot.booked {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 </style>
 </head>
 <body>
@@ -2123,6 +2132,7 @@ function rTouchDragInit(el, type, idx) {
 
   el.addEventListener('touchstart', function(e) {
     activated = false;
+    e.preventDefault();
     var t = e.touches[0];
     longPressTimer = setTimeout(function() {
       activated = true;
@@ -2136,8 +2146,8 @@ function rTouchDragInit(el, type, idx) {
         + 'left:' + rect.left + 'px;top:' + rect.top + 'px;';
       document.body.appendChild(clone);
       el.style.opacity = '0.3';
-    }, 400);
-  }, { passive: true });
+    }, 300);
+  }, { passive: false });
 
   el.addEventListener('touchmove', function(e) {
     if (!activated) { clearTimeout(longPressTimer); return; }
@@ -2160,12 +2170,16 @@ function rTouchDragInit(el, type, idx) {
   el.addEventListener('touchend', function(e) {
     clearTimeout(longPressTimer);
     el.style.opacity = '';
-    if (clone) { clone.remove(); clone = null; }
     document.querySelectorAll('.slot.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
-    if (!activated || !_rDrag) { _rDrag = null; activated = false; return; }
+    if (!activated || !_rDrag) {
+      if (clone) { clone.remove(); clone = null; }
+      _rDrag = null; activated = false; return;
+    }
 
     var t = e.changedTouches[0];
+    if (clone) clone.style.display = 'none';
     var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (clone) { clone.remove(); clone = null; }
     if (target) {
       var slot = target.closest('.slot.empty[data-slot-type]');
       if (slot) {
@@ -2660,8 +2674,10 @@ function touchDragInit(el, personId, dayIdx, entryIdx) {
 
   el.addEventListener('touchstart', function(e) {
     activated = false;
+    // Metin seçimini hemen engelle
+    e.preventDefault();
     var t = e.touches[0];
-    // 400ms basılı tutunca aktif olsun
+    // 300ms basılı tutunca aktif olsun
     longPressTimer = setTimeout(function() {
       activated = true;
       _touchDrag = { personId: personId, dayIdx: dayIdx, entryIdx: entryIdx };
@@ -2705,14 +2721,18 @@ function touchDragInit(el, personId, dayIdx, entryIdx) {
   el.addEventListener('touchend', function(e) {
     clearTimeout(longPressTimer);
     el.style.opacity = '';
-    if (_touchClone) { _touchClone.remove(); _touchClone = null; }
     document.querySelectorAll('.day-cell.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
 
-    if (!activated || !_touchDrag) { _touchDrag = null; activated = false; return; }
+    if (!activated || !_touchDrag) {
+      if (_touchClone) { _touchClone.remove(); _touchClone = null; }
+      _touchDrag = null; activated = false; return;
+    }
 
     var t = e.changedTouches[0];
+    // Clone'u gizle (remove değil) ki elementFromPoint doğru çalışsın
     if (_touchClone) _touchClone.style.display = 'none';
     var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (_touchClone) { _touchClone.remove(); _touchClone = null; }
 
     if (target) {
       var cell = target.closest('.day-cell[data-person-id]');
