@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>901 Akkim — Depo Yönetim Sistemi</title>
+<title>Akkim Depo İthalat ve İhracat Planı</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -459,17 +459,21 @@ body {
 }
 
 /* ── WEEK TABLE ── */
-.week-table {
+.table-card {
   width: 100%;
   min-width: 960px;
-  border-collapse: separate;
-  border-spacing: 0;
   background: var(--surface);
   border-radius: 14px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
   overflow: hidden;
   margin-bottom: 20px;
+}
+.week-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
 }
 
 /* Day header row */
@@ -687,13 +691,20 @@ th:not(:last-child), td:not(:last-child) {
 .total-lbl { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
 
 /* ── NOTES TABLE ── */
-.notes-section {
+.notes-section { display: none; } /* eski, kullanılmıyor */
+.notes-inline {
+  border-top: 1px solid var(--border);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
   overflow: hidden;
-  min-width: 960px;
+}
+.notes-inline .notes-header {
+  padding: 10px 16px;
+  background: var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: .8px;
+  border-bottom: 1px solid var(--border);
 }
 
 .notes-header {
@@ -709,6 +720,7 @@ th:not(:last-child), td:not(:last-child) {
 .notes-grid {
   display: grid;
   grid-template-columns: 150px repeat(var(--day-count, 7), 1fr);
+  width: 100%;
 }
 
 .notes-day-head {
@@ -736,6 +748,7 @@ th:not(:last-child), td:not(:last-child) {
   letter-spacing: .3px;
   display: flex;
   align-items: center;
+  width: 150px;
 }
 
 .notes-cell {
@@ -847,7 +860,7 @@ th:not(:last-child), td:not(:last-child) {
 @media print {
   .header, .overlay { display:none!important; }
   body { background: white; }
-  .week-table, .notes-section { box-shadow:none; border:1px solid #ccc; }
+  .table-card, .notes-section { box-shadow:none; border:1px solid #ccc; }
 }
 
 
@@ -1283,7 +1296,8 @@ input, textarea, select {
 
   /* ── HAFTALİK: TABLO ── */
   .main { padding: 0 !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .week-table { min-width: 560px; }
+  .table-card { min-width: 560px; }
+  .week-table { width: 100%; }
   .th-name { padding: 8px !important; font-size: 10px; min-width: 75px; }
   .name-cell { min-width: 75px; padding: 8px !important; }
   .person-name { font-size: 11px; }
@@ -1304,7 +1318,7 @@ input, textarea, select {
 
   /* ── HAFTALİK: NOTLAR ── */
   .notes-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .notes-grid { min-width: 560px; }
+  .notes-grid { min-width: unset; width: 100%; }
   .notes-title { font-size: 11px; padding: 10px 12px 8px; }
   .notes-row-label { font-size: 10px; }
   .notes-cell { font-size: 11px; padding: 5px; }
@@ -1376,6 +1390,20 @@ input, textarea, select {
 .header-bottom-row .header-center {
   border: none; background: transparent; padding: 8px 0;
 }
+
+
+/* ── DRAG & DROP ── */
+.entry-chip[draggable="true"] { cursor: grab; }
+.entry-chip[draggable="true"]:active { cursor: grabbing; }
+.entry-chip.dragging { opacity: 0.4; transform: scale(0.97); }
+.day-cell.drag-over { background: #eff4ff !important; outline: 2px dashed #2563eb; outline-offset: -2px; border-radius: 8px; }
+
+
+/* ── RANDEVU DRAG & DROP ── */
+.slot.booked[draggable="true"] { cursor: grab; }
+.slot.booked[draggable="true"]:active { cursor: grabbing; }
+.slot.booked.dragging { opacity: 0.35; }
+.slot.empty.drag-over { background: #eff4ff !important; outline: 2px dashed #2563eb; outline-offset: -2px; }
 
 </style>
 </head>
@@ -1572,15 +1600,11 @@ input, textarea, select {
 </header>
 
 <div class="main">
-  <table class="week-table" id="weekTable">
-    <thead id="tableHead"></thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-
-  <!-- Notes / Approval section -->
-  <div class="notes-section">
-    <div class="notes-header">AÇIKLAMALAR & ONAYLAR</div>
-    <div class="notes-grid" id="notesGrid"></div>
+  <div class="table-card">
+    <table class="week-table" id="weekTable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
   </div>
 </div>
 
@@ -1957,13 +1981,14 @@ function render(type) {
       const canDel = cu2 && (cu2.role === 'admin' || isOwner);
     const delBtn = canDel ? `<button class="del-btn" onclick="R.deleteBooking('${type}',${idx},event)">✕</button>` : '';
     const creatorTag = booking.createdBy ? `<div class="booking-creator">↳ ${booking.createdBy}</div>` : '';
-    const editSlot = canDel ? `ondblclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}',true)" title="Düzenlemek için çift tıklayın" style="cursor:pointer"` : '';
-    html+=`<div class="slot booked booked-${type}${pc}" ${editSlot}>${tc}<div class="slot-body"><div><div class="booking-plate">${booking.plate}</div><div class="booking-detail">${booking.company}${booking.cargo?' · '+booking.cargo:''}</div>${creatorTag}</div>${delBtn}</div></div>`;
+    const editSlot = canDel ? `ondblclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}',true)" title="Düzenlemek için çift tıklayın"` : '';
+    const dragSlot = canDel ? `draggable="true" ondragstart="R.slotDragStart(event,'${type}',${idx})" ondragend="R.slotDragEnd(event)"` : '';
+    html+=`<div class="slot booked booked-${type}${pc}" ${editSlot} ${dragSlot}>${tc}<div class="slot-body"><div><div class="booking-plate">${booking.plate}</div><div class="booking-detail">${booking.company}${booking.cargo?' · '+booking.cargo:''}</div>${creatorTag}</div>${delBtn}</div></div>`;
     } else {
       const cu3 = window._currentUser;
       const canAdd = cu3 && cu3.role !== 'guest';
     if(canAdd){
-      html+=`<div class="slot empty${pc}" onclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}')">${tc}<div class="slot-body"><span class="empty-hint">Boş slot</span><div class="plus-btn">+</div></div></div>`;
+      html+=`<div class="slot empty${pc}" onclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}')" ondragover="R.slotDragOver(event)" ondragleave="R.slotDragLeave(event)" ondrop="R.slotDrop(event,'${type}',${idx})">${tc}<div class="slot-body"><span class="empty-hint">Boş slot</span><div class="plus-btn">+</div></div></div>`;
     } else {
       html+=`<div class="slot empty${pc}" onclick="R.showReadonlyHint()">${tc}<div class="slot-body"><span class="empty-hint" style="color:#d1d5db">Boş</span></div></div>`;
     }
@@ -2026,6 +2051,47 @@ function saveBooking() {
   if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
 }
 
+
+// ── RANDEVU DRAG & DROP ──
+let _rDrag = null;
+
+function slotDragStart(e, type, idx) {
+  _rDrag = { type, idx };
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function slotDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+}
+
+function slotDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function slotDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function slotDrop(e, targetType, targetIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!_rDrag) return;
+  const { type: srcType, idx: srcIdx } = _rDrag;
+  _rDrag = null;
+  if (srcType === targetType && srcIdx === targetIdx) return;
+  const bk = bookingsForDate(selectedDate);
+  if (!bk[srcType][srcIdx]) return;
+  // Hedef dolu ise taşıma
+  if (bk[targetType][targetIdx]) return;
+  bk[targetType][targetIdx] = bk[srcType][srcIdx];
+  delete bk[srcType][srcIdx];
+  render('adr'); render('normal');
+  if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bk)));
+}
+
 function deleteBooking(type,idx,e) {
   e.stopPropagation();
   delete bookingsForDate(selectedDate)[type][idx];
@@ -2054,6 +2120,11 @@ window.R = {
   closeModal: closeModal,
   saveBooking: saveBooking,
   deleteBooking: deleteBooking,
+  slotDragStart: slotDragStart,
+  slotDragEnd: slotDragEnd,
+  slotDragOver: slotDragOver,
+  slotDragLeave: slotDragLeave,
+  slotDrop: slotDrop,
   openModal: openModal,
   initCalendar: initCalendar,
   render: render,
@@ -2330,7 +2401,8 @@ function render() {
           ? '<button class="chip-del" onclick="H.deleteEntry(\'' + p.id + '\',' + i + ',' + ei + ',event)">✕</button>'
           : '';
         const editAttr = canEditRow ? ' ondblclick="H.openModal(\'' + p.id + '\',' + i + ',' + ei + ')"  title="Düzenlemek için çift tıklayın"' : '';
-        cellContent += '<div class="entry-chip ' + typeClass + '"' + editAttr + '>'
+        const dragAttr = canEditRow ? ' draggable="true" ondragstart="H.dragStart(event,\'' + p.id + '\',' + i + ',' + ei + ')"' : '';
+        cellContent += '<div class="entry-chip ' + typeClass + '"' + editAttr + dragAttr + '>'
           + '<div class="entry-count">' + (e.count||'') + '</div>'
           + '<div class="entry-desc">' + (e.desc||'') + '</div>'
           + delBtn + '</div>';
@@ -2338,7 +2410,8 @@ function render() {
       if(canEditRow){
         cellContent += '<div class="add-entry-btn" onclick="H.openModal(\'' + p.id + '\',' + i + ')">+ ekle</div>';
       }
-      bodyHtml += '<td class="day-cell' + (entries.length?' has-entry':'') + '">' + cellContent + '</td>';
+      const dropAttr = canEditRow ? ' ondragover="H.dragOver(event)" ondragleave="H.dragLeave(event)" ondrop="H.dropEntry(event,\'' + p.id + '\',' + i + ')"' : '';
+      bodyHtml += '<td class="day-cell' + (entries.length?' has-entry':'') + '"' + dropAttr + '>' + cellContent + '</td>';
     });
     bodyHtml += '</tr>';
   });
@@ -2372,38 +2445,60 @@ function renderNotes(days, wk) {
   const grid = document.getElementById('notesGrid');
   const cols = days.length;
 
-  // Set dynamic column count
+  // Sütun genişlikleri tablo ile aynı: th-name (150px) + günler (1fr)
   grid.style.gridTemplateColumns = '150px repeat(' + cols + ', 1fr)';
 
-  // Header row
-  let html = '<div class="notes-day-head" style="border-right:1px solid var(--border)"></div>';
-  days.forEach((day, i) => {
+  // Sadece AÇIKLAMALAR satırı
+  let html = '<div class="notes-label" style="border-bottom:none">AÇIKLAMALAR</div>';
+  days.forEach((_, i) => {
     const isLast = i === cols - 1;
-    const hol2 = isHolidayH(day);
-    const holStyle = hol2 ? 'color:#dc2626;background:#fff1f2;' : '';
-    html += '<div class="notes-day-head" style="' + holStyle + (isLast ? 'border-right:none' : '') + '">' + DAY_SHORT[i] + ' ' + day.getDate() + '</div>';
-  });
-
-  // Notes rows
-  const noteRows = [
-    { key:'aciklama', label:'AÇIKLAMALAR' },
-    { key:'onay',     label:'ONAYLAR' },
-    { key:'konteyner',label:'KONTEYNER' },
-  ];
-
-  noteRows.forEach((row, ri) => {
-    const isLastRow = ri === noteRows.length - 1;
-    html += `<div class="notes-label" style="${isLastRow ? 'border-bottom:none' : ''}">${row.label}</div>`;
-    days.forEach((_, i) => {
-      const isLast = i === cols - 1;
-      const val = (n[i] && n[i][row.key]) || '';
-      html += `<div class="notes-cell" style="${isLast ? 'border-right:none;' : ''}${isLastRow ? 'border-bottom:none;' : ''}">
-        <textarea placeholder="..." rows="2" onchange="H.saveNote('${row.key}',${i},this.value)">${val}</textarea>
-      </div>`;
-    });
+    const val = (n[i] && n[i]['aciklama']) || '';
+    html += '<div class="notes-cell" style="' + (isLast ? 'border-right:none;' : '') + 'border-bottom:none;">'
+      + '<textarea placeholder="..." rows="2" onchange="H.saveNote(\'aciklama\',' + i + ',this.value)">' + val + '</textarea>'
+      + '</div>';
   });
 
   grid.innerHTML = html;
+}
+
+
+// ── DRAG & DROP (Haftalık Plan) ──
+let _drag = null;
+
+function dragStart(e, personId, dayIdx, entryIdx) {
+  _drag = { personId, dayIdx, entryIdx };
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function dropEntry(e, targetPersonId, targetDayIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!_drag) return;
+  const { personId, dayIdx, entryIdx } = _drag;
+  // Aynı hücreye bırakıldıysa işlem yapma
+  if (personId === targetPersonId && dayIdx === targetDayIdx) { _drag = null; return; }
+  const wk = weekKey(currentMonday);
+  const d = dataFor(wk);
+  const srcKey = cellKey(personId, dayIdx);
+  const tgtKey = cellKey(targetPersonId, targetDayIdx);
+  if (!d[srcKey]) { _drag = null; return; }
+  const entry = d[srcKey].splice(entryIdx, 1)[0];
+  if (!d[tgtKey]) d[tgtKey] = [];
+  d[tgtKey].push(entry);
+  _drag = null;
+  render();
+  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
 }
 
 // ── NAVIGATION ──
@@ -2548,6 +2643,10 @@ window.H = {
   saveNote: saveNote,
   render: render,
   openAdmin: openAdmin,
+  dragStart: dragStart,
+  dragOver: dragOver,
+  dragLeave: dragLeave,
+  dropEntry: dropEntry,
   closeAdmin: closeAdmin,
   handleAdminOverlay: handleAdminOverlay,
   editPerson: editPerson,
