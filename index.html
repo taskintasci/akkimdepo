@@ -2040,18 +2040,24 @@ function render(type) {
     const creatorTag = booking.createdBy ? `<div class="booking-creator">↳ ${booking.createdBy}</div>` : '';
     const editSlot = canDel ? `ondblclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}',true)" title="Düzenlemek için çift tıklayın"` : '';
     const dragSlot = canDel ? `draggable="true" ondragstart="R.slotDragStart(event,'${type}',${idx})" ondragend="R.slotDragEnd(event)"` : '';
-    html+=`<div class="slot booked booked-${type}${pc}" ${editSlot} ${dragSlot}>${tc}<div class="slot-body"><div><div class="booking-plate">${booking.plate}</div><div class="booking-detail">${booking.company}${booking.cargo?' · '+booking.cargo:''}</div>${creatorTag}</div>${delBtn}</div></div>`;
+    html+=`<div class="slot booked booked-${type}${pc}" data-slot-type="${type}" data-slot-idx="${idx}" ${editSlot} ${dragSlot}>${tc}<div class="slot-body"><div><div class="booking-plate">${booking.plate}</div><div class="booking-detail">${booking.company}${booking.cargo?' · '+booking.cargo:''}</div>${creatorTag}</div>${delBtn}</div></div>`;
     } else {
       const cu3 = window._currentUser;
       const canAdd = cu3 && cu3.role !== 'guest';
     if(canAdd){
-      html+=`<div class="slot empty${pc}" onclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}')" ondragover="R.slotDragOver(event)" ondragleave="R.slotDragLeave(event)" ondrop="R.slotDrop(event,'${type}',${idx})">${tc}<div class="slot-body"><span class="empty-hint">Boş slot</span><div class="plus-btn">+</div></div></div>`;
+      html+=`<div class="slot empty${pc}" data-slot-type="${type}" data-slot-idx="${idx}" onclick="R.openModal('${type}',${idx},'${toTime(slot.start)}','${toTime(slot.end)}')" ondragover="R.slotDragOver(event)" ondragleave="R.slotDragLeave(event)" ondrop="R.slotDrop(event,'${type}',${idx})">${tc}<div class="slot-body"><span class="empty-hint">Boş slot</span><div class="plus-btn">+</div></div></div>`;
     } else {
       html+=`<div class="slot empty${pc}" onclick="R.showReadonlyHint()">${tc}<div class="slot-body"><span class="empty-hint" style="color:#d1d5db">Boş</span></div></div>`;
     }
     }
   });
   cont.innerHTML=html;
+  // Touch drag init (randevu)
+  cont.querySelectorAll('.slot.booked[data-slot-type]').forEach(function(el) {
+    var sType = el.dataset.slotType;
+    var sIdx  = parseInt(el.dataset.slotIdx);
+    rTouchDragInit(el, sType, sIdx);
+  });
   updateSchedStats();
 }
 
@@ -2109,6 +2115,78 @@ function saveBooking() {
 }
 
 
+// ── RANDEVU TOUCH DRAG ──
+function rTouchDragInit(el, type, idx) {
+  var longPressTimer = null;
+  var activated = false;
+  var clone = null;
+
+  el.addEventListener('touchstart', function(e) {
+    activated = false;
+    var t = e.touches[0];
+    longPressTimer = setTimeout(function() {
+      activated = true;
+      _rDrag = { type: type, idx: idx };
+      if (navigator.vibrate) navigator.vibrate(40);
+      clone = el.cloneNode(true);
+      var rect = el.getBoundingClientRect();
+      clone.style.cssText = 'position:fixed;z-index:9999;opacity:0.9;pointer-events:none;'
+        + 'width:' + rect.width + 'px;border-radius:10px;'
+        + 'box-shadow:0 8px 24px rgba(0,0,0,.2);transition:none;'
+        + 'left:' + rect.left + 'px;top:' + rect.top + 'px;';
+      document.body.appendChild(clone);
+      el.style.opacity = '0.3';
+    }, 400);
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function(e) {
+    if (!activated) { clearTimeout(longPressTimer); return; }
+    e.preventDefault();
+    var t = e.touches[0];
+    if (clone) {
+      clone.style.left = (t.clientX - 40) + 'px';
+      clone.style.top  = (t.clientY - 30) + 'px';
+    }
+    document.querySelectorAll('.slot.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
+    if (clone) clone.style.display = 'none';
+    var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (clone) clone.style.display = '';
+    if (target) {
+      var slot = target.closest('.slot.empty[data-slot-type]');
+      if (slot) slot.classList.add('drag-over');
+    }
+  }, { passive: false });
+
+  el.addEventListener('touchend', function(e) {
+    clearTimeout(longPressTimer);
+    el.style.opacity = '';
+    if (clone) { clone.remove(); clone = null; }
+    document.querySelectorAll('.slot.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
+    if (!activated || !_rDrag) { _rDrag = null; activated = false; return; }
+
+    var t = e.changedTouches[0];
+    var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (target) {
+      var slot = target.closest('.slot.empty[data-slot-type]');
+      if (slot) {
+        var tType = slot.dataset.slotType;
+        var tIdx  = parseInt(slot.dataset.slotIdx);
+        R.slotDrop({ preventDefault: function(){}, currentTarget: slot }, tType, tIdx);
+      }
+    }
+    _rDrag = null;
+    activated = false;
+  });
+
+  el.addEventListener('touchcancel', function() {
+    clearTimeout(longPressTimer);
+    el.style.opacity = '';
+    if (clone) { clone.remove(); clone = null; }
+    _rDrag = null;
+    activated = false;
+  });
+}
+
 // ── RANDEVU DRAG & DROP ──
 let _rDrag = null;
 
@@ -2134,7 +2212,7 @@ function slotDragLeave(e) {
 
 function slotDrop(e, targetType, targetIdx) {
   e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
+  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
   if (!_rDrag) return;
   const { type: srcType, idx: srcIdx } = _rDrag;
   _rDrag = null;
@@ -2577,53 +2655,84 @@ var _touchDrag = null;
 var _touchClone = null;
 
 function touchDragInit(el, personId, dayIdx, entryIdx) {
+  var longPressTimer = null;
+  var activated = false;
+
   el.addEventListener('touchstart', function(e) {
+    activated = false;
     var t = e.touches[0];
-    _touchDrag = { personId, dayIdx, entryIdx, startX: t.clientX, startY: t.clientY, moved: false };
-    // Clone oluştur
-    _touchClone = el.cloneNode(true);
-    _touchClone.style.cssText = 'position:fixed;z-index:999;opacity:0.85;pointer-events:none;transform:scale(1.05);transition:none;width:' + el.offsetWidth + 'px;';
-    _touchClone.style.left = t.clientX + 'px';
-    _touchClone.style.top = t.clientY + 'px';
-    document.body.appendChild(_touchClone);
-    setTimeout(function(){ if(_touchDrag) el.style.opacity='0.35'; }, 0);
+    // 400ms basılı tutunca aktif olsun
+    longPressTimer = setTimeout(function() {
+      activated = true;
+      _touchDrag = { personId: personId, dayIdx: dayIdx, entryIdx: entryIdx };
+      // Titreşim (varsa)
+      if (navigator.vibrate) navigator.vibrate(40);
+      // Clone
+      _touchClone = el.cloneNode(true);
+      var rect = el.getBoundingClientRect();
+      _touchClone.style.cssText = 'position:fixed;z-index:9999;opacity:0.9;pointer-events:none;'
+        + 'width:' + rect.width + 'px;border-radius:10px;'
+        + 'box-shadow:0 8px 24px rgba(0,0,0,.2);transition:none;'
+        + 'left:' + rect.left + 'px;top:' + rect.top + 'px;';
+      document.body.appendChild(_touchClone);
+      el.style.opacity = '0.3';
+    }, 400);
   }, { passive: true });
 
   el.addEventListener('touchmove', function(e) {
-    if (!_touchDrag) return;
+    if (!activated) {
+      clearTimeout(longPressTimer);
+      return;
+    }
     e.preventDefault();
-    _touchDrag.moved = true;
     var t = e.touches[0];
-    _touchClone.style.left = (t.clientX - 40) + 'px';
-    _touchClone.style.top = (t.clientY - 20) + 'px';
-    // Highlight drop target
-    document.querySelectorAll('.day-cell.drag-over').forEach(function(el){ el.classList.remove('drag-over'); });
+    if (_touchClone) {
+      _touchClone.style.left = (t.clientX - 40) + 'px';
+      _touchClone.style.top  = (t.clientY - 20) + 'px';
+    }
+    // Hedef hücreyi highlight et
+    document.querySelectorAll('.day-cell.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
+    // Clone'u geçici gizle, altındaki elementi bul
+    if (_touchClone) _touchClone.style.display = 'none';
     var target = document.elementFromPoint(t.clientX, t.clientY);
+    if (_touchClone) _touchClone.style.display = '';
     if (target) {
-      var cell = target.closest('.day-cell');
+      var cell = target.closest('.day-cell[data-person-id]');
       if (cell) cell.classList.add('drag-over');
     }
   }, { passive: false });
 
   el.addEventListener('touchend', function(e) {
-    if (!_touchDrag) return;
+    clearTimeout(longPressTimer);
     el.style.opacity = '';
     if (_touchClone) { _touchClone.remove(); _touchClone = null; }
     document.querySelectorAll('.day-cell.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
-    if (!_touchDrag.moved) { _touchDrag = null; return; }
+
+    if (!activated || !_touchDrag) { _touchDrag = null; activated = false; return; }
+
     var t = e.changedTouches[0];
+    if (_touchClone) _touchClone.style.display = 'none';
     var target = document.elementFromPoint(t.clientX, t.clientY);
+
     if (target) {
-      var cell = target.closest('[data-person-id]');
+      var cell = target.closest('.day-cell[data-person-id]');
       if (cell) {
         var tPersonId = cell.dataset.personId;
         var tDayIdx = parseInt(cell.dataset.dayIdx);
+        // dropEntry'nin _touchDrag'i okuyabilmesi için null yapmadan önce çağır
         H.dropEntry({ preventDefault: function(){} }, tPersonId, tDayIdx);
-        _touchDrag = null;
-        return;
       }
     }
     _touchDrag = null;
+    activated = false;
+  });
+
+  el.addEventListener('touchcancel', function() {
+    clearTimeout(longPressTimer);
+    el.style.opacity = '';
+    if (_touchClone) { _touchClone.remove(); _touchClone = null; }
+    _touchDrag = null;
+    activated = false;
   });
 }
 
