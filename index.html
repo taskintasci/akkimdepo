@@ -26,7 +26,7 @@ body { min-height:100vh; }
 }
 .launcher h1 { font-size:30px; font-weight:800; letter-spacing:-1px; color:#181c2e; text-align:center; line-height:1.2; }
 .launcher-sub { font-size:14px; color:#788096; margin-top:8px; margin-bottom:48px; text-align:center; }
-.app-cards { display:flex; gap:20px; }
+.app-cards { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; }
 .app-card {
   width:230px; background:white; border:1.5px solid #e4e7ef;
   border-radius:20px; padding:30px 24px; cursor:pointer;
@@ -49,14 +49,17 @@ body { min-height:100vh; }
 .app-shell { display:none; flex-direction:column; min-height:100vh; }
 .app-shell.active { display:flex; }
 
+.nav-back-btn, .nav-switch-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:6px 13px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  font-family:inherit;
+}
 .nav-back-btn {
-  padding:6px 13px; border-radius:8px; border:1px solid #e4e7ef;
-  background:white; color:#788096; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  border:1px solid #e4e7ef; background:white; color:#788096;
 }
 .nav-back-btn:hover { color:#181c2e; border-color:#788096; }
 .nav-switch-btn {
-  padding:6px 13px; border-radius:8px; border:1px solid #bfdbfe;
-  background:#eff4ff; color:#2563eb; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s;
+  border:1px solid #bfdbfe; background:#eff4ff; color:#2563eb;
 }
 .nav-switch-btn:hover { background:#2563eb; color:white; border-color:#2563eb; }
 
@@ -436,6 +439,7 @@ body {
 .header-right { display: flex; gap: 8px; align-items: center; }
 
 .hbtn {
+  display: inline-flex; align-items: center; gap: 5px;
   padding: 7px 16px;
   border-radius: 8px;
   border: 1px solid var(--border2);
@@ -588,15 +592,60 @@ th:not(:last-child), td:not(:last-child) {
 /* Entry chip */
 .entry-chip {
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 7px 9px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 9px;
   border-radius: 8px;
   border: 1px solid;
   margin-bottom: 4px;
   cursor: pointer;
   transition: all .15s;
   position: relative;
+}
+
+.chip-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.entry-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 22px;
+}
+
+.entry-desc {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text);
+  word-break: break-all;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-width: 120px;
+  white-space: normal;
+}
+
+.chip-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 0;
+  margin-bottom: 2px;
+}
+.entry-chip:not(.pinned) .chip-top-bar { justify-content: flex-end; }
+.entry-chip:not(.pinned) .chip-top-bar:not(:has(.chip-del:hover)) { min-height: 0; }
+
+.chip-pin {
+  font-size: 8px; font-weight: 700; color: #2563eb; opacity: 0.9;
+  letter-spacing: 0.3px;
+  font-family: 'Syne', sans-serif;
+  line-height: 1;
 }
 
 .entry-chip:hover { filter: brightness(0.97); }
@@ -623,30 +672,12 @@ th:not(:last-child), td:not(:last-child) {
   border-color: var(--border2);
 }
 
-.entry-count {
-  font-family: 'DM Mono', monospace;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1;
-  flex-shrink: 0;
-  min-width: 22px;
-}
-
 .entry-chip.imo .entry-count { color: var(--orange); }
 .entry-chip.imosuz .entry-count { color: var(--green); }
 .entry-chip.ithalat .entry-count { color: var(--purple); }
 .entry-chip.other .entry-count { color: var(--text-muted); }
 
-.entry-desc {
-  font-size: 10px;
-  line-height: 1.4;
-  color: var(--text);
-  word-break: break-word;
-}
-
 .chip-del {
-  position: absolute;
-  top: 4px; right: 4px;
   width: 16px; height: 16px;
   border-radius: 4px;
   border: none;
@@ -657,6 +688,8 @@ th:not(:last-child), td:not(:last-child) {
   display: none;
   align-items: center; justify-content: center;
   transition: all .1s;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .entry-chip:hover .chip-del { display: flex; }
@@ -1469,6 +1502,161 @@ input, textarea, select {
   -webkit-touch-callout: none;
 }
 
+
+/* ── TAMAMLANDI & PİN ── */
+.entry-chip.completed {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  cursor: default;
+}
+.entry-chip.completed .entry-desc { text-decoration: line-through; color: var(--text-muted); }
+.entry-chip.completed[draggable] { pointer-events: none; }
+.entry-chip.pinned { border-width: 1.5px; }
+.entry-chip.pinned .entry-count { font-weight: 700; }
+
+/* ── TAMAMLANDI butonu (modal) ── */
+.mbtn-complete {
+  flex: 1; padding: 11px; border-radius: 10px;
+  border: 1.5px solid #d1fae5; background: #f0fdf4; color: #16a34a;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Syne', sans-serif; transition: all .15s;
+}
+.mbtn-complete:hover { background: #16a34a; color: white; }
+.mbtn-activate {
+  flex: 1; padding: 11px; border-radius: 10px;
+  border: 1.5px solid #fde68a; background: #fffbeb; color: #d97706;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Syne', sans-serif; transition: all .15s;
+}
+.mbtn-activate:hover { background: #d97706; color: white; }
+
+/* ── PIN toggle (modal) ── */
+.pin-toggle-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 10px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  cursor: pointer; user-select: none; margin-top: 2px;
+}
+.pin-toggle-row input { cursor: pointer; width: 16px; height: 16px; accent-color: #2563eb; }
+.pin-toggle-row span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+
+/* ── ÖZEL ETİKETLER ── */
+.special-labels-section {
+  margin-top: 4px;
+}
+.special-labels-section label.section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .6px;
+  color: var(--text-muted); display: block; margin-bottom: 6px;
+}
+.special-labels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.slabel-toggle {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 8px 4px; border-radius: 10px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  cursor: pointer; user-select: none;
+  transition: border-color .15s, background .15s;
+  text-align: center;
+}
+.slabel-toggle .sl-icon { font-size: 18px; line-height: 1; }
+.slabel-toggle .sl-text { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+.slabel-toggle.checked {
+  border-color: #2563eb; background: #eff4ff;
+}
+.slabel-toggle.checked .sl-text { color: #2563eb; }
+
+/* Chip etiket ikonları */
+.chip-labels {
+  display: flex; gap: 3px; flex-wrap: wrap; margin-top: 2px;
+}
+.chip-label-icon {
+  font-size: 12px; line-height: 1; title: attr(title);
+}
+
+
+.sync-select-modal {
+  width: 100%; padding: 10px 14px; border-radius: 10px;
+  border: 1.5px solid var(--border); font-family: 'Syne', sans-serif;
+  font-size: 14px; background: var(--bg); color: var(--text);
+  outline: none; cursor: pointer;
+}
+
+/* ── AYLIK ÖZET MODALİ ── */
+.monthly-overlay {
+  display: none; position: fixed; inset: 0; z-index: 900;
+  background: rgba(10,15,35,.45); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.monthly-overlay.active { display: flex; }
+.monthly-modal {
+  background: white; border-radius: 20px; padding: 28px 24px;
+  width: 100%; max-width: 680px; max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18); font-family: 'Syne', sans-serif;
+}
+.monthly-head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+}
+.monthly-head h3 { font-size: 17px; font-weight: 800; color: #181c2e; }
+.monthly-close {
+  width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #e4e7ef;
+  background: white; cursor: pointer; font-size: 14px; font-family: 'Syne', sans-serif;
+}
+.monthly-nav {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 18px;
+}
+.monthly-nav button {
+  width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #e4e7ef;
+  background: white; cursor: pointer; font-size: 16px; font-family: 'Syne', sans-serif;
+}
+.monthly-nav span { font-size: 14px; font-weight: 700; color: #181c2e; flex: 1; text-align: center; }
+.monthly-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.monthly-table th {
+  padding: 8px 10px; text-align: center; font-size: 10px; font-weight: 700;
+  color: #788096; letter-spacing: .5px; border-bottom: 2px solid #e4e7ef;
+}
+.monthly-table th:first-child { text-align: left; }
+.monthly-table td {
+  padding: 8px 10px; text-align: center;
+  border-bottom: 1px solid #f1f3f8; color: #181c2e; font-weight: 600;
+}
+.monthly-table td:first-child { text-align: left; font-weight: 700; }
+.monthly-table tr:last-child td { border-bottom: none; font-weight: 800; color: #2563eb; background: #f0f4ff; }
+.monthly-table .zero { color: #d1d5db; font-weight: 400; }
+.m-imo { color: var(--orange); }
+.m-imosuz { color: var(--green); }
+.m-ithalat { color: var(--purple); }
+.m-other { color: var(--text-muted); }
+
+/* ── RANDEVU → PLAN SYNC TOAST ── */
+.sync-toast {
+  display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 980; background: #181c2e; color: white;
+  border-radius: 14px; padding: 14px 18px; font-family: 'Syne', sans-serif;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,.25); min-width: 280px;
+}
+.sync-toast.active { display: flex; align-items: center; gap: 10px; flex-direction: column; white-space: normal; min-width: 300px; }
+.sync-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+.sync-select {
+  flex: 1; padding: 7px 10px; border-radius: 8px; border: none;
+  font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600;
+  background: rgba(255,255,255,.15); color: white;
+}
+.sync-select option { background: #181c2e; color: white; }
+.sync-btn-yes {
+  padding: 7px 14px; border-radius: 8px; border: none;
+  background: #16a34a; color: white; font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.sync-btn-no {
+  padding: 7px 10px; border-radius: 8px; border: none;
+  background: rgba(255,255,255,.12); color: rgba(255,255,255,.7);
+  font-family: 'Syne', sans-serif; font-size: 12px; cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -1478,7 +1666,7 @@ input, textarea, select {
 
 <div class="launcher active" id="launcher">
   <div class="launcher-logo">🏭</div>
-  <div style="position:absolute;top:12px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#b2b9cc;letter-spacing:.5px;">v1.4</div>
+  <div style="position:absolute;top:12px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#b2b9cc;letter-spacing:.5px;">v2.2</div>
   <h1>Akkim Depolama Merkezi<br><span style="color:var(--accent)">İthalat ve İhracat Planı</span></h1>
 
   <!-- USER PICKER -->
@@ -1507,6 +1695,12 @@ input, textarea, select {
         <p>Personel bazlı haftalık yükleme planını görüntüleyin ve düzenleyin.</p>
         <div class="card-arrow">→</div>
       </div>
+      <div class="app-card" id="card-monthly" onclick="openMonthlyFromLauncher()">
+        <div class="card-icon green">📊</div>
+        <h3>Aylık Özet</h3>
+        <p>Kişi bazlı aylık yükleme istatistiklerini görüntüleyin.</p>
+        <div class="card-arrow">→</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1519,8 +1713,10 @@ input, textarea, select {
       <div class="logo-icon">🏭</div>
       <div class="logo-text">DEPO <span>RANDEVU</span></div>
     </div>
-    <div class="header-right">
-      <div class="chip date" id="todayChip">—</div>
+    <div class="header-right" id="homeHeaderRight">
+      <button class="nav-back-btn" onclick="goLauncher()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg> Ana Sayfa</button>
+      <button class="nav-switch-btn" id="homeHaftalikBtn" onclick="openApp('haftalik')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg> Haftalık Plan</button>
+      <div class="current-user-chip" id="homeUserChip" onclick="changeUser()" title="Kullanıcıyı değiştir"></div>
     </div>
   </header>
 
@@ -1564,8 +1760,8 @@ input, textarea, select {
       <div class="logo-text">DEPO <span>RANDEVU</span></div>
     </div>
     <div class="header-right">
-      <button onclick="R.goHome()" style="display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:8px;border:1.5px solid #e4e7ef;background:white;color:#788096;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#2563eb';this.style.background='#eff4ff'" onmouseout="this.style.borderColor='#e4e7ef';this.style.color='#788096';this.style.background='white'">← Takvime Dön</button>
-      <div class="chip date" id="schedDateChip">—</div>
+      <button class="nav-back-btn" onclick="R.goHome()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> Takvime Dön</button>
+      <button class="nav-switch-btn" onclick="openApp('haftalik'); if(window.H && window.R && window.R.getSelectedDate && window.R.getSelectedDate()) window.H.goToWeek(window.R.getSelectedDate());"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg> Haftalık Plana Git</button>
       <div class="chip adr" id="schedAdrChip">IMO'lu: 0/0</div>
       <div class="chip normal" id="schedNormalChip">IMO'suz: 0/0</div>
     </div>
@@ -1650,7 +1846,7 @@ input, textarea, select {
       </div>
     </div>
     <div class="header-right">
-      <button class="hbtn" onclick="H.goToday()">Bu Hafta</button>
+      <button class="hbtn" onclick="H.goToday()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Bu Hafta</button>
       <span id="adminBtnWrapper"></span>
     </div>
   </div>
@@ -1690,6 +1886,29 @@ input, textarea, select {
       </div>
     </div>
 
+    <!-- Yapılacaklar -->
+    <div class="special-labels-section">
+      <label class="section-label">YAPILACAKLAR</label>
+      <div class="special-labels-grid">
+        <div class="slabel-toggle" id="slOzel" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">🏷️</span>
+          <span class="sl-text">Özel Etiket</span>
+        </div>
+        <div class="slabel-toggle" id="slLashing" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">⛓️</span>
+          <span class="sl-text">Lashing</span>
+        </div>
+        <div class="slabel-toggle" id="slKarton" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">📦</span>
+          <span class="sl-text">Karton</span>
+        </div>
+        <div class="slabel-toggle" id="slJel" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">💧</span>
+          <span class="sl-text">Nem Çekici</span>
+        </div>
+      </div>
+    </div>
+
     <div class="fg">
       <label>ARAÇ / KONTEYNER SAYISI</label>
       <input type="number" id="fCount" placeholder="0" min="0" max="99" oninput="this.classList.remove('error')">
@@ -1700,7 +1919,13 @@ input, textarea, select {
       <textarea id="fDesc" placeholder="Firma adı, konteyner tipi, vb." rows="3" oninput="this.classList.remove('error')"></textarea>
     </div>
 
-    <div class="modal-actions">
+    <!-- Pin toggle -->
+    <label class="pin-toggle-row" id="pinToggleRow">
+      <input type="checkbox" id="fPin">
+      <span>📌 Cut-Off</span>
+    </label>
+
+    <div class="modal-actions" id="modalActions">
       <button class="mbtn-cancel" onclick="H.closeModal()">İptal</button>
       <button class="mbtn-save" onclick="H.saveEntry()">✓ Kaydet</button>
     </div>
@@ -1898,7 +2123,8 @@ function isSlotPast(dateK, slotEnd) {
 function initCalendar() {
   currentYear=today.getFullYear(); currentMonth=today.getMonth();
   renderCalendar();
-  document.getElementById('todayChip').textContent=
+  var _tc = document.getElementById('todayChip');
+  if (_tc) _tc.textContent =
     today.toLocaleDateString('tr-TR',{weekday:'short',day:'2-digit',month:'long'});
   // Load bookings from Firebase
   if (window.DB) {
@@ -2020,7 +2246,7 @@ function openSchedule() {
   if(!selectedDate)return;
   document.getElementById('homePage').classList.remove('active');
   document.getElementById('schedulePage').classList.add('active');
-  document.getElementById('schedDateChip').textContent=formatDateShort(selectedDate);
+  var _sdc=document.getElementById('schedDateChip'); if(_sdc) _sdc.textContent=formatDateShort(selectedDate);
   render('adr'); render('normal');
 }
 
@@ -2131,9 +2357,14 @@ function saveBooking() {
     closeModal(); return;
   }
   const creator = (cu_s && cu_s.role !== 'guest') ? cu_s.name : '';
+  const isNewSlot = !bookingsForDate(selectedDate)[modalCtx.type][modalCtx.idx];
   bookingsForDate(selectedDate)[modalCtx.type][modalCtx.idx]={plate,company,cargo,createdBy:creator};
   closeModal(); render(modalCtx.type); renderCalendar();
   if (window.DB) window.DB.saveBookingDate(selectedDate, JSON.parse(JSON.stringify(bookingsForDate(selectedDate))));
+  // Yeni kayıt ise sync toast göster
+  if(isNewSlot && window.H && window.H.showSyncToast) {
+    window.H.showSyncToast(plate, company, cargo, selectedDate);
+  }
 }
 
 
@@ -2142,8 +2373,11 @@ function rTouchDragInit(el, type, idx) {
   var longPressTimer = null;
   var activated = false;
   var clone = null;
+  var lastTapTime = 0;
 
   el.addEventListener('touchstart', function(e) {
+    // Delete butonuna dokunuluyorsa hiçbir şeyi engelleme
+    if (e.target.closest('.del-btn')) return;
     activated = false;
     e.preventDefault();
     var t = e.touches[0];
@@ -2159,7 +2393,7 @@ function rTouchDragInit(el, type, idx) {
         + 'left:' + rect.left + 'px;top:' + rect.top + 'px;';
       document.body.appendChild(clone);
       el.style.opacity = '0.3';
-    }, 300);
+    }, 400);
   }, { passive: false });
 
   el.addEventListener('touchmove', function(e) {
@@ -2184,9 +2418,26 @@ function rTouchDragInit(el, type, idx) {
     clearTimeout(longPressTimer);
     el.style.opacity = '';
     document.querySelectorAll('.slot.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
+
+    // Delete butonuna dokunuluyorsa tıklamayı tetikle
+    if (e.target.closest('.del-btn')) {
+      e.target.closest('.del-btn').click();
+      _rDrag = null; activated = false;
+      return;
+    }
+
     if (!activated || !_rDrag) {
       if (clone) { clone.remove(); clone = null; }
-      _rDrag = null; activated = false; return;
+      _rDrag = null; activated = false;
+      // Çift dokunma tespiti → modal aç
+      var now = Date.now();
+      if (now - lastTapTime < 350) {
+        lastTapTime = 0;
+        R.openModal(type, idx, null, null, true);
+      } else {
+        lastTapTime = now;
+      }
+      return;
     }
 
     var t = e.changedTouches[0];
@@ -2299,7 +2550,8 @@ window.R = {
     if(!b) return;
     b.classList.add('show');
     setTimeout(function(){ b.classList.remove('show'); }, 2000);
-  }
+  },
+  getSelectedDate: function() { return selectedDate; }
 };
 
 })();
@@ -2442,8 +2694,6 @@ let data = {};
 let notes = {};
 
 let currentMonday = getMonday(new Date());
-let modalCtx = null;
-let selectedType = 'imo';
 
 // ── WEEK HELPERS ──
 function getMonday(d) {
@@ -2561,17 +2811,37 @@ function render() {
       let cellContent = '';
       const cu = window._currentUser;
       const canEditRow = cu && (cu.role === 'admin' || cu.id === p.id);
-      entries.forEach(function(e, ei) {
+
+      // Pinlileri üste al (orijinal index'i koru)
+      const sortedEntries = entries
+        .map(function(en, ei){ return {en:en, ei:ei}; })
+        .sort(function(a,b){ return (b.en.pinned?1:0)-(a.en.pinned?1:0); });
+
+      sortedEntries.forEach(function(item) {
+        const e = item.en, ei = item.ei;
         const typeClass = e.type || 'other';
+        const isCompleted = e.completed ? ' completed' : '';
+        const isPinned    = e.pinned    ? ' pinned'    : '';
+        const pinIcon     = e.pinned    ? '<span class="chip-pin">Cut-Off</span>' : '';
+        const labelsHtml  = (e.labels && (e.labels.ozel||e.labels.lashing||e.labels.karton||e.labels.jel))
+          ? '<div class="chip-labels">'
+            + (e.labels.ozel    ? '<span class="chip-label-icon" title="Özel Etiket">🏷️</span>' : '')
+            + (e.labels.lashing ? '<span class="chip-label-icon" title="Lashing">⛓️</span>' : '')
+            + (e.labels.karton  ? '<span class="chip-label-icon" title="Karton">📦</span>' : '')
+            + (e.labels.jel     ? '<span class="chip-label-icon" title="Nem Çekici">💧</span>' : '')
+            + '</div>' : '';
+        const canAct = canEditRow && !e.completed;
         const delBtn = canEditRow
           ? '<button class="chip-del" onclick="H.deleteEntry(\'' + p.id + '\',' + i + ',' + ei + ',event)">✕</button>'
           : '';
         const editAttr = canEditRow ? ' ondblclick="H.openModal(\'' + p.id + '\',' + i + ',' + ei + ')"  title="Düzenlemek için çift tıklayın"' : '';
-        const dragAttr = canEditRow ? ' draggable="true" ondragstart="H.dragStart(event,\'' + p.id + '\',' + i + ',' + ei + ')"' : '';
-        cellContent += '<div class="entry-chip ' + typeClass + '"' + editAttr + dragAttr + '>'
-          + '<div class="entry-count">' + (e.count||'') + '</div>'
-          + '<div class="entry-desc">' + (e.desc||'') + '</div>'
-          + delBtn + '</div>';
+        const dragAttr = canAct ? ' draggable="true" ondragstart="H.dragStart(event,\'' + p.id + '\',' + i + ',' + ei + ')"' : '';
+        cellContent += '<div class="entry-chip ' + typeClass + isCompleted + isPinned + '"' + editAttr + dragAttr + '>'
+          + '<div class="chip-top-bar">' + pinIcon + delBtn + '</div>'
+          + '<div class="chip-body"><div class="entry-count">' + (e.count||'') + '</div>'
+          + '<div class="entry-desc">' + (e.desc||'') + '</div></div>'
+          + labelsHtml
+          + '</div>';
       });
       if(canEditRow){
         cellContent += '<div class="add-entry-btn" onclick="H.openModal(\'' + p.id + '\',' + i + ')">+ ekle</div>';
@@ -2685,13 +2955,16 @@ var _touchClone = null;
 function touchDragInit(el, personId, dayIdx, entryIdx) {
   var longPressTimer = null;
   var activated = false;
+  var lastTapTime = 0;
 
   el.addEventListener('touchstart', function(e) {
+    // Silme butonuna dokunuluyorsa serbest bırak
+    if (e.target.closest('.chip-del')) return;
     activated = false;
     // Metin seçimini hemen engelle
     e.preventDefault();
     var t = e.touches[0];
-    // 300ms basılı tutunca aktif olsun
+    // 400ms basılı tutunca aktif olsun
     longPressTimer = setTimeout(function() {
       activated = true;
       _touchDrag = { personId: personId, dayIdx: dayIdx, entryIdx: entryIdx };
@@ -2706,7 +2979,7 @@ function touchDragInit(el, personId, dayIdx, entryIdx) {
         + 'left:' + rect.left + 'px;top:' + rect.top + 'px;';
       document.body.appendChild(_touchClone);
       el.style.opacity = '0.3';
-    }, 300);
+    }, 400);
   }, { passive: false });
 
   el.addEventListener('touchmove', function(e) {
@@ -2737,9 +3010,25 @@ function touchDragInit(el, personId, dayIdx, entryIdx) {
     el.style.opacity = '';
     document.querySelectorAll('.day-cell.drag-over').forEach(function(c){ c.classList.remove('drag-over'); });
 
+    // Silme butonuna dokunuluyorsa tıklamayı tetikle
+    if (e.target.closest('.chip-del')) {
+      e.target.closest('.chip-del').click();
+      _touchDrag = null; activated = false;
+      return;
+    }
+
     if (!activated || !_touchDrag) {
       if (_touchClone) { _touchClone.remove(); _touchClone = null; }
-      _touchDrag = null; activated = false; return;
+      _touchDrag = null; activated = false;
+      // Çift dokunma → düzenleme modalı
+      var now = Date.now();
+      if (now - lastTapTime < 350) {
+        lastTapTime = 0;
+        H.openModal(personId, dayIdx, entryIdx);
+      } else {
+        lastTapTime = now;
+      }
+      return;
     }
 
     var t = e.changedTouches[0];
@@ -2770,59 +3059,264 @@ function touchDragInit(el, personId, dayIdx, entryIdx) {
   });
 }
 
-// ── NAVIGATION ──
-function changeWeek(dir) {
-  currentMonday = new Date(currentMonday);
-  currentMonday.setDate(currentMonday.getDate() + dir*7);
-  render();
+
+// ── AYLIK ÖZET ──
+var _monthlyDate = null;
+
+function openMonthly() {
+  _monthlyDate = new Date(currentMonday.getFullYear(), currentMonday.getMonth(), 1);
+  renderMonthly();
+  document.getElementById('monthlyOverlay').classList.add('active');
+}
+function closeMonthly() { document.getElementById('monthlyOverlay').classList.remove('active'); }
+function handleMonthlyOverlay(e) { if(e.target===document.getElementById('monthlyOverlay')) closeMonthly(); }
+function changeMonth(dir) {
+  _monthlyDate = new Date(_monthlyDate.getFullYear(), _monthlyDate.getMonth() + dir, 1);
+  renderMonthly();
 }
 
-function goToday() {
-  currentMonday = getMonday(new Date());
-  render();
+function renderMonthly() {
+  const year  = _monthlyDate.getFullYear();
+  const month = _monthlyDate.getMonth();
+  const monthNames = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  document.getElementById('monthlyLabel').textContent = monthNames[month] + ' ' + year;
+  const types = ['imo','imosuz','ithalat','other'];
+  const typeLabels = ["IMO'lu","IMO'suz","İthalat","Diğer"];
+  const totals = {};
+  PERSONS.forEach(function(p){ totals[p.id] = {imo:0,imosuz:0,ithalat:0,other:0}; });
+  Object.keys(data).forEach(function(wk) {
+    var wkData = data[wk];
+    var parts = wk.match(/^(\d+)-W(\d+)$/);
+    if(!parts) return;
+    var wYear = parseInt(parts[1]), wNum = parseInt(parts[2]);
+    var jan4 = new Date(wYear, 0, 4);
+    var day1 = new Date(jan4.getFullYear(), jan4.getMonth(), jan4.getDate() - ((jan4.getDay()+6)%7) + (wNum-1)*7);
+    for(var di=0; di<7; di++) {
+      var dayDate = new Date(day1.getFullYear(), day1.getMonth(), day1.getDate() + di);
+      if(dayDate.getFullYear()===year && dayDate.getMonth()===month) {
+        PERSONS.forEach(function(p) {
+          var ck = p.id + '_' + di;
+          (wkData[ck]||[]).forEach(function(e) {
+            if(e.type && totals[p.id]!==undefined) totals[p.id][e.type] = (totals[p.id][e.type]||0) + (parseInt(e.count)||0);
+          });
+        });
+      }
+    }
+  });
+  var thead = document.getElementById('monthlyThead');
+  var tbody = document.getElementById('monthlyTbody');
+  var headHtml = '<tr><th>KİŞİ</th>';
+  types.forEach(function(t,ti){ headHtml += '<th class="m-'+t+'">'+typeLabels[ti]+'</th>'; });
+  headHtml += '<th>TOPLAM</th></tr>';
+  thead.innerHTML = headHtml;
+  var grandTotal = {imo:0,imosuz:0,ithalat:0,other:0};
+  var bodyHtml = '';
+  PERSONS.forEach(function(p) {
+    var row = totals[p.id];
+    var pTotal = (row.imo||0)+(row.imosuz||0)+(row.ithalat||0)+(row.other||0);
+    types.forEach(function(t){ grandTotal[t]=(grandTotal[t]||0)+(row[t]||0); });
+    bodyHtml += '<tr><td>'+p.name+'</td>';
+    types.forEach(function(t){ bodyHtml += '<td class="m-'+t+(row[t]?'':' zero')+'">'+(row[t]||'—')+'</td>'; });
+    bodyHtml += '<td>'+(pTotal||'—')+'</td></tr>';
+  });
+  var gTotal = (grandTotal.imo||0)+(grandTotal.imosuz||0)+(grandTotal.ithalat||0)+(grandTotal.other||0);
+  bodyHtml += '<tr><td>TOPLAM</td>';
+  types.forEach(function(t){ bodyHtml += '<td class="m-'+t+'">'+(grandTotal[t]||'—')+'</td>'; });
+  bodyHtml += '<td>'+(gTotal||'—')+'</td></tr>';
+  tbody.innerHTML = bodyHtml;
+}
+
+// ── RANDEVU → PLAN SYNC ──
+var _syncBooking = null;
+var _syncTimer = null;
+var _syncSelectedType = null;
+
+function showSyncToast(plate, company, cargo, dateKey) {
+  _syncBooking = { plate: plate, company: company, cargo: cargo, dateKey: dateKey };
+  _syncSelectedType = null;
+  var cu = window._currentUser;
+  var isAdmin = cu && cu.role === 'admin';
+
+  // Başlık ve açıklama
+  document.getElementById('syncModalSub').textContent = company || plate || '';
+  document.getElementById('syncCount').value = '1';
+  document.getElementById('syncDesc').value = company || plate || '';
+
+  // Kişi satırı
+  var personRow = document.getElementById('syncPersonRow');
+  var personDisp = document.getElementById('syncPersonDisplay');
+  if(isAdmin) {
+    if(personRow) {
+      personRow.style.display = '';
+      var sel = document.getElementById('syncPersonSel');
+      if(sel) {
+        sel.innerHTML = '';
+        PERSONS.forEach(function(p){
+          var opt = document.createElement('option');
+          opt.value = p.id; opt.textContent = p.name;
+          sel.appendChild(opt);
+        });
+      }
+    }
+    if(personDisp) personDisp.style.display = 'none';
+  } else {
+    if(personRow) personRow.style.display = 'none';
+    if(personDisp) {
+      personDisp.style.display = '';
+      personDisp.textContent = cu ? cu.name : '';
+    }
+  }
+
+  // Tür seçimini sıfırla
+  document.querySelectorAll('#syncTypeRow .type-opt').forEach(function(el){ el.className = 'type-opt'; });
+
+  // Etiketleri sıfırla
+  ['syncSlOzel','syncSlLashing','syncSlKarton','syncSlJel'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.classList.remove('checked');
+  });
+
+  document.getElementById('syncOverlay').classList.add('active');
+}
+
+function syncSelectType(t) {
+  _syncSelectedType = t;
+  document.querySelectorAll('#syncTypeRow .type-opt').forEach(function(el) {
+    el.className = 'type-opt';
+    if(el.dataset.type === t) el.classList.add('sel-' + t);
+  });
+}
+
+function syncOverlayClick(e) {
+  if(e.target === document.getElementById('syncOverlay')) syncDismiss();
+}
+
+function syncDismiss() {
+  clearTimeout(_syncTimer);
+  document.getElementById('syncOverlay').classList.remove('active');
+  _syncBooking = null;
+  _syncSelectedType = null;
+}
+
+function syncConfirm() {
+  if(!_syncBooking) return;
+  var cu = window._currentUser;
+  var isAdmin = cu && cu.role === 'admin';
+  var type = _syncSelectedType;
+  if(!type) {
+    document.querySelectorAll('#syncTypeRow .type-opt').forEach(function(el){ el.classList.add('type-error'); });
+    return;
+  }
+  // Kişi: admin ise seçileni, değilse kendisi
+  var personId;
+  if(isAdmin) {
+    var sel = document.getElementById('syncPersonSel');
+    personId = sel ? sel.value : (cu ? cu.id : null);
+  } else {
+    personId = cu ? cu.id : null;
+  }
+  if(!personId) { syncDismiss(); return; }
+
+  try {
+    var parts = _syncBooking.dateKey.split('-');
+    var bDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+    var monday = getMonday(bDate);
+    var wk = weekKey(monday);
+    var dayIdx = (bDate.getDay() + 6) % 7;
+    var d = dataFor(wk);
+    var ck = cellKey(personId, dayIdx);
+    if(!d[ck]) d[ck] = [];
+    var syncCnt = (document.getElementById('syncCount') ? document.getElementById('syncCount').value : '1') || '1';
+    var syncDesc2 = (document.getElementById('syncDesc') ? document.getElementById('syncDesc').value.trim() : '') || _syncBooking.company || _syncBooking.plate;
+    var syncLabels = {
+      ozel:    document.getElementById('syncSlOzel')    ? document.getElementById('syncSlOzel').classList.contains('checked')    : false,
+      lashing: document.getElementById('syncSlLashing') ? document.getElementById('syncSlLashing').classList.contains('checked') : false,
+      karton:  document.getElementById('syncSlKarton')  ? document.getElementById('syncSlKarton').classList.contains('checked')  : false,
+      jel:     document.getElementById('syncSlJel')     ? document.getElementById('syncSlJel').classList.contains('checked')     : false,
+    };
+    d[ck].push({ count: syncCnt, desc: syncDesc2, type: type, labels: syncLabels });
+    if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+    // Haftalık plan aktifse render et
+    try {
+      if(weekKey(currentMonday) === wk && document.getElementById('shell-haftalik') &&
+         document.getElementById('shell-haftalik').classList.contains('active')) render();
+    } catch(e2) {}
+  } catch(e) {
+    console.error('syncConfirm hata:', e);
+  }
+
+  // Kapat ve bildirim göster
+  syncDismiss();
+  // Kısa başarı toast
+  var toastEl = document.getElementById('syncSuccessToast');
+  if(toastEl) {
+    var person2 = PERSONS.find(function(p){ return p.id === personId; });
+    var pName = person2 ? person2.name : (cu ? cu.name : '');
+    toastEl.textContent = '✅ ' + pName + ' — haftalık plana eklendi!';
+    toastEl.classList.add('active');
+    setTimeout(function(){ toastEl.classList.remove('active'); }, 2500);
+  }
 }
 
 // ── MODAL ──
+let modalCtx_h = null;
+let selectedType = null;
+
 function openModal(personId, dayIdx, editIdx) {
   const isEdit = editIdx !== undefined && editIdx !== null;
-  modalCtx = {personId, dayIdx, editIdx: isEdit ? editIdx : null};
+  modalCtx_h = { personId, dayIdx, editIdx: isEdit ? editIdx : null };
   const days = getWeekDays(currentMonday);
-  const person = PERSONS.find(p=>p.id===personId);
+  const person = PERSONS.find(p => p.id === personId);
+  if (!person) return;
   document.getElementById('modalTitle').textContent = isEdit ? 'Kayıt Düzenle' : 'Kayıt Ekle';
   document.getElementById('modalSub').textContent =
-    `${person.name}  ·  ${DAY_NAMES[dayIdx]}, ${days[dayIdx].toLocaleDateString('tr-TR',{day:'2-digit',month:'long'})}`;
+    person.name + '  ·  ' + DAY_NAMES[dayIdx] + ', ' + days[dayIdx].toLocaleDateString('tr-TR',{day:'2-digit',month:'long'});
   document.getElementById('fCount').classList.remove('error');
   document.getElementById('fDesc').classList.remove('error');
   document.querySelectorAll('.type-opt').forEach(el => el.classList.remove('sel-imo','sel-imosuz','sel-ithalat','sel-other','type-error'));
 
-  if(isEdit) {
+  if (isEdit) {
     const wk = weekKey(currentMonday);
     const d = dataFor(wk);
     const ck = cellKey(personId, dayIdx);
     const entry = (d[ck] || [])[editIdx];
-    if(entry) {
+    if (entry) {
       document.getElementById('fCount').value = entry.count || '';
       document.getElementById('fDesc').value = entry.desc || '';
+      document.getElementById('fPin').checked = !!entry.pinned;
+      setSLabels(entry.labels || {});
       selectedType = entry.type || null;
-      if(selectedType) selectType(selectedType);
+      if (selectedType) selectType(selectedType);
+      const actions = document.getElementById('modalActions');
+      if (entry.completed) {
+        actions.innerHTML = '<button class="mbtn-cancel" onclick="H.closeModal()">İptal</button>'
+          + '<button class="mbtn-activate" onclick="H.toggleComplete()">↺ Aktif Et</button>'
+          + '<button class="mbtn-save" onclick="H.saveEntry()">✓ Kaydet</button>';
+      } else {
+        actions.innerHTML = '<button class="mbtn-cancel" onclick="H.closeModal()">İptal</button>'
+          + '<button class="mbtn-complete" onclick="H.toggleComplete()">✓ Tamamlandı</button>'
+          + '<button class="mbtn-save" onclick="H.saveEntry()">Kaydet</button>';
+      }
     }
   } else {
     document.getElementById('fCount').value = '';
     document.getElementById('fDesc').value = '';
+    document.getElementById('fPin').checked = false;
+    setSLabels({});
     selectedType = null;
+    document.getElementById('modalActions').innerHTML =
+      '<button class="mbtn-cancel" onclick="H.closeModal()">İptal</button>'
+      + '<button class="mbtn-save" onclick="H.saveEntry()">✓ Kaydet</button>';
   }
   document.getElementById('overlay').classList.add('active');
-  setTimeout(()=>document.getElementById('fCount').focus(), 80);
+  setTimeout(() => document.getElementById('fCount').focus(), 80);
 }
-
-function closeModal() { document.getElementById('overlay').classList.remove('active'); }
-function handleOverlay(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
 
 function selectType(t) {
   selectedType = t;
   document.querySelectorAll('.type-opt').forEach(el => {
     el.className = 'type-opt';
-    if(el.dataset.type===t) el.classList.add('sel-' + t);
+    if (el.dataset.type === t) el.classList.add('sel-' + t);
   });
 }
 
@@ -2830,36 +3324,36 @@ function saveEntry() {
   const count = document.getElementById('fCount').value.trim();
   const desc  = document.getElementById('fDesc').value.trim();
   let valid = true;
-
-  // Tür zorunlu
-  if(!selectedType) {
+  if (!selectedType) {
     document.querySelectorAll('.type-opt').forEach(el => el.classList.add('type-error'));
     valid = false;
   }
-  // Sayı zorunlu
-  if(!count) {
+  if (!count) {
     document.getElementById('fCount').classList.add('error');
-    if(valid) document.getElementById('fCount').focus();
+    if (valid) document.getElementById('fCount').focus();
     valid = false;
   }
-  // Açıklama zorunlu
-  if(!desc) {
+  if (!desc) {
     document.getElementById('fDesc').classList.add('error');
-    if(valid) document.getElementById('fDesc').focus();
+    if (valid) document.getElementById('fDesc').focus();
     valid = false;
   }
-  if(!valid) return;
+  if (!valid) return;
 
   const wk = weekKey(currentMonday);
   const d  = dataFor(wk);
-  const ck = cellKey(modalCtx.personId, modalCtx.dayIdx);
-  if(!d[ck]) d[ck] = [];
-  if(modalCtx.editIdx !== null && modalCtx.editIdx !== undefined) {
-    // Edit existing
-    d[ck][modalCtx.editIdx] = { count, desc, type: selectedType };
+  const ck = cellKey(modalCtx_h.personId, modalCtx_h.dayIdx);
+  if (!d[ck]) d[ck] = [];
+  if (modalCtx_h.editIdx !== null && modalCtx_h.editIdx !== undefined) {
+    const prev = d[ck][modalCtx_h.editIdx] || {};
+    d[ck][modalCtx_h.editIdx] = { count, desc, type: selectedType,
+      pinned: document.getElementById('fPin').checked,
+      labels: getSLabels(),
+      completed: prev.completed || false };
   } else {
-    // Add new
-    d[ck].push({ count, desc, type: selectedType });
+    d[ck].push({ count, desc, type: selectedType,
+      pinned: document.getElementById('fPin').checked,
+      labels: getSLabels() });
   }
   closeModal();
   render();
@@ -2868,7 +3362,7 @@ function saveEntry() {
 
 function deleteEntry(personId, dayIdx, entryIdx, e) {
   const cu = window._currentUser;
-  if(!cu || (cu.role !== 'admin' && cu.id !== personId)) return;
+  if (!cu || (cu.role !== 'admin' && cu.id !== personId)) return;
   e.stopPropagation();
   const wk = weekKey(currentMonday);
   const d  = dataFor(wk);
@@ -2876,43 +3370,103 @@ function deleteEntry(personId, dayIdx, entryIdx, e) {
   const entry = (d[ck] || [])[entryIdx];
   const label = entry ? (entry.desc || 'bu kayıt') : 'bu kayıt';
   showConfirm(label + ' silinsin mi?', function() {
-    if(d[ck]) { d[ck].splice(entryIdx,1); if(d[ck].length===0) delete d[ck]; }
+    if (d[ck]) { d[ck].splice(entryIdx, 1); if (d[ck].length === 0) delete d[ck]; }
     render();
-    var wk2 = weekKey(currentMonday);
-    if (window.DB) window.DB.saveWeeklyWeek(wk2, JSON.parse(JSON.stringify(dataFor(wk2))));
+    if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
   });
 }
 
 function saveNote(key, dayIdx, value) {
   const wk = weekKey(currentMonday);
   const n  = notesFor(wk);
-  if(!n[dayIdx]) n[dayIdx] = {};
+  if (!n[dayIdx]) n[dayIdx] = {};
   n[dayIdx][key] = value;
   if (window.DB) window.DB.saveNoteWeek(wk, JSON.parse(JSON.stringify(notesFor(wk))));
 }
 
-// ── KEYBOARD ──
-document.addEventListener('keydown', e => {
-  if(!document.getElementById('overlay').classList.contains('active')) return;
-  if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); saveEntry(); }
-  if(e.key==='Escape') closeModal();
-});
 
-/* deferred */
+function toggleComplete() {
+  if(!modalCtx_h || modalCtx_h.editIdx === null || modalCtx_h.editIdx === undefined) return;
+  const wk = weekKey(currentMonday);
+  const d  = dataFor(wk);
+  const ck = cellKey(modalCtx_h.personId, modalCtx_h.dayIdx);
+  if(!d[ck] || !d[ck][modalCtx_h.editIdx]) return;
+  d[ck][modalCtx_h.editIdx].completed = !d[ck][modalCtx_h.editIdx].completed;
+  closeModal();
+  render();
+  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+}
 
-function setData(d) { data = d; }
+function toggleSLabel(el, key) {
+  el.classList.toggle('checked');
+}
+
+function setSLabels(labels) {
+  var map = { slOzel:'ozel', slLashing:'lashing', slKarton:'karton', slJel:'jel' };
+  Object.keys(map).forEach(function(elId) {
+    var el = document.getElementById(elId);
+    if(el) el.classList.toggle('checked', !!(labels && labels[map[elId]]));
+  });
+}
+
+function getSLabels() {
+  return {
+    ozel:    document.getElementById('slOzel')    ? document.getElementById('slOzel').classList.contains('checked')    : false,
+    lashing: document.getElementById('slLashing') ? document.getElementById('slLashing').classList.contains('checked') : false,
+    karton:  document.getElementById('slKarton')  ? document.getElementById('slKarton').classList.contains('checked')  : false,
+    jel:     document.getElementById('slJel')     ? document.getElementById('slJel').classList.contains('checked')     : false,
+  };
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('active'); }
+function handleOverlay(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function changeWeek(dir) {
+  currentMonday = new Date(currentMonday);
+  currentMonday.setDate(currentMonday.getDate() + dir * 7);
+  render();
+}
+
+function goToday() {
+  currentMonday = getMonday(new Date());
+  render();
+}
+
+function goToWeek(dateStr) {
+  // dateStr: 'YYYY-MM-DD'
+  if(!dateStr) { goToday(); return; }
+  var parts = dateStr.split('-');
+  var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  currentMonday = getMonday(d);
+  render();
+}
+
+function setData(d)  { data = d; }
 function setNotes(n) { notes = n; }
-function setPersons(list) { PERSONS = list.map(function(p) { return { id: p.id||"", name: p.name||"", role: p.role||"" }; }); }
+function setPersons(list) {
+  PERSONS = list.map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
+}
 
 window.H = {
+  openMonthly: openMonthly,
+  closeMonthly: closeMonthly,
+  handleMonthlyOverlay: handleMonthlyOverlay,
+  changeMonth: changeMonth,
+  showSyncToast: showSyncToast,
+  syncDismiss: syncDismiss,
+  syncConfirm: syncConfirm,
+  syncSelectType: syncSelectType,
+  syncOverlayClick: syncOverlayClick,
   changeWeek: changeWeek,
   goToday: goToday,
+  goToWeek: goToWeek,
   handleOverlay: handleOverlay,
   selectType: selectType,
   closeModal: closeModal,
   saveEntry: saveEntry,
   deleteEntry: deleteEntry,
   openModal: openModal,
+  toggleComplete: toggleComplete,
   saveNote: saveNote,
   render: render,
   openAdmin: openAdmin,
@@ -2930,7 +3484,8 @@ window.H = {
   addPerson: addPerson,
   setData: setData,
   setNotes: setNotes,
-  setPersons: setPersons
+  setPersons: setPersons,
+  toggleSLabel: toggleSLabel
 };
 
 })();
@@ -2953,6 +3508,13 @@ function openApp(app) {
     document.querySelectorAll('#shell-randevu .page').forEach(function(p) { p.classList.remove('active'); });
     document.getElementById('homePage').classList.add('active');
     if (!randevuInited) { window.R.initCalendar(); randevuInited = true; }
+    // Kullanıcı chip'ini güncelle
+    var uChip = document.getElementById('homeUserChip');
+    if (uChip && window._currentUser) {
+      var dotColor = window._currentUser.role==='admin'?'#2563eb':window._currentUser.role==='guest'?'#9ca3af':'#16a34a';
+      uChip.innerHTML = '<span class="cu-dot" style="background:'+dotColor+'"></span>' + window._currentUser.name;
+      uChip.style.display = '';
+    }
   }
   if (app === 'haftalik') {
     if (!haftalikInited) {
@@ -2987,21 +3549,56 @@ function switchApp() {
   openApp(isRandevu ? 'haftalik' : 'randevu');
 }
 
-function injectNavButtons(app) {
-  var header = app === 'randevu'
-    ? document.querySelector('#shell-randevu .app-header')
-    : document.querySelector('#shell-haftalik .header');
+
+function injectHomeHeader() {
+  var header = document.querySelector('#homePage .app-header .header-right');
   if (!header) return;
-  header.querySelectorAll('.nav-back-btn,.nav-switch-btn,.current-user-chip').forEach(function(el) { el.remove(); });
+  header.querySelectorAll('.nav-back-btn,.nav-switch-btn,.current-user-chip,.nav-haftalik-btn').forEach(function(el){ el.remove(); });
+
+  var icoPlan = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>';
+  var icoHome = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>';
 
   var backBtn = document.createElement('button');
   backBtn.className = 'nav-back-btn';
-  backBtn.innerHTML = '⌂ Ana Sayfa';
+  backBtn.innerHTML = icoHome + ' Ana Sayfa';
+  backBtn.onclick = goLauncher;
+  header.appendChild(backBtn);
+
+  var switchBtn = document.createElement('button');
+  switchBtn.className = 'nav-switch-btn nav-haftalik-btn';
+  switchBtn.innerHTML = icoPlan + ' Haftalık Plan';
+  switchBtn.onclick = function() { openApp('haftalik'); };
+  header.appendChild(switchBtn);
+
+  if (window._currentUser) {
+    var uChip = document.createElement('div');
+    uChip.className = 'current-user-chip';
+    var dotColor = window._currentUser.role==='admin'?'#2563eb':window._currentUser.role==='guest'?'#9ca3af':'#16a34a';
+    uChip.innerHTML = '<span class="cu-dot" style="background:'+dotColor+'"></span>' + window._currentUser.name;
+    uChip.title = 'Kullanıcıyı değiştir';
+    uChip.onclick = changeUser;
+    header.appendChild(uChip);
+  }
+}
+
+function injectNavButtons(app) {
+  if (app === 'randevu') return; // randevu butonları HTML'de sabit
+  var header = document.querySelector('#shell-haftalik .header');
+  if (!header) return;
+  header.querySelectorAll('.nav-back-btn,.nav-switch-btn,.current-user-chip').forEach(function(el) { el.remove(); });
+
+  var icoHome = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z\"/><path d=\"M9 21V12h6v9\"/></svg>";
+  var icoCal  = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/></svg>";
+  var icoPlan = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M9 9h6M9 12h6M9 15h4\"/></svg>";
+
+  var backBtn = document.createElement('button');
+  backBtn.className = 'nav-back-btn';
+  backBtn.innerHTML = icoHome + ' Ana Sayfa';
   backBtn.onclick = goLauncher;
 
   var switchBtn = document.createElement('button');
   switchBtn.className = 'nav-switch-btn';
-  switchBtn.innerHTML = app === 'randevu' ? '📋 Haftalık Plan' : '📅 Randevu';
+  switchBtn.innerHTML = app === 'randevu' ? (icoPlan + ' Haftalık Plan') : (icoCal + ' Randevu');
   switchBtn.onclick = switchApp;
 
   var rightDiv = app === 'haftalik'
@@ -3152,6 +3749,30 @@ function loadPersonsForUserList() {
 
 function showUserSelect() { changeUser(); }
 
+function openMonthlyFromLauncher() {
+  // Haftalık planı başlat (gerekirse) sonra monthly aç
+  if (!window._currentUser) return;
+  if (!haftalikInited) {
+    haftalikInited = true;
+    if (window.DB) {
+      Promise.all([
+        window.DB.loadWeeklyData(),
+        window.DB.loadNotes(),
+        window.DB.loadPersons()
+      ]).then(function(results) {
+        if (results[0]) window.H.setData(results[0]);
+        if (results[1]) window.H.setNotes(results[1]);
+        if (results[2]) window.H.setPersons(results[2]);
+        window.H.openMonthly();
+      }).catch(function() { window.H.openMonthly(); });
+    } else {
+      window.H.openMonthly();
+    }
+  } else {
+    window.H.openMonthly();
+  }
+}
+
 // ── INIT ──
 document.getElementById('card-randevu').addEventListener('click', function() { openApp('randevu'); });
 document.getElementById('card-haftalik').addEventListener('click', function() { openApp('haftalik'); });
@@ -3181,6 +3802,103 @@ setInterval(function() {
   </div>
 </div>
 
+
+
+<!-- AYLIK ÖZET -->
+<div class="monthly-overlay" id="monthlyOverlay" onclick="H.handleMonthlyOverlay(event)">
+  <div class="monthly-modal">
+    <div class="monthly-head">
+      <h3 id="monthlyTitle">📊 Aylık Özet</h3>
+      <button class="monthly-close" onclick="H.closeMonthly()">✕</button>
+    </div>
+    <div class="monthly-nav">
+      <button onclick="H.changeMonth(-1)">‹</button>
+      <span id="monthlyLabel">—</span>
+      <button onclick="H.changeMonth(1)">›</button>
+    </div>
+    <table class="monthly-table">
+      <thead id="monthlyThead"></thead>
+      <tbody id="monthlyTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- RANDEVU→PLAN SYNC TOAST -->
+<!-- SYNC MODAL -->
+<div class="overlay" id="syncOverlay" onclick="H.syncOverlayClick(event)">
+  <div class="modal">
+    <h3 id="syncModalTitle">Haftalık Plana Ekle</h3>
+    <div class="modal-sub" id="syncModalSub">—</div>
+
+    <div class="fg">
+      <label>KİŞİ</label>
+      <div id="syncPersonRow" style="display:none">
+        <select class="sync-select-modal" id="syncPersonSel"></select>
+      </div>
+      <div id="syncPersonDisplay" style="display:none;font-weight:700;font-size:14px;color:var(--text)"></div>
+    </div>
+
+    <div class="fg">
+      <label>TÜR</label>
+      <div class="type-row" id="syncTypeRow">
+        <div class="type-opt" data-type="imo" onclick="H.syncSelectType('imo')">IMO'lu</div>
+        <div class="type-opt" data-type="imosuz" onclick="H.syncSelectType('imosuz')">IMO'suz</div>
+        <div class="type-opt" data-type="ithalat" onclick="H.syncSelectType('ithalat')">İthalat</div>
+        <div class="type-opt" data-type="other" onclick="H.syncSelectType('other')">Diğer</div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>ARAÇ / KONTEYNER SAYISI</label>
+      <input type="number" id="syncCount" value="1" min="1" max="99">
+    </div>
+
+    <div class="fg">
+      <label>AÇIKLAMA</label>
+      <input type="text" id="syncDesc" placeholder="Firma adı, vb.">
+    </div>
+
+    <!-- Yapılacaklar -->
+    <div class="special-labels-section">
+      <label class="section-label">YAPILACAKLAR</label>
+      <div class="special-labels-grid">
+        <div class="slabel-toggle" id="syncSlOzel" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">🏷️</span>
+          <span class="sl-text">Özel Etiket</span>
+        </div>
+        <div class="slabel-toggle" id="syncSlLashing" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">⛓️</span>
+          <span class="sl-text">Lashing</span>
+        </div>
+        <div class="slabel-toggle" id="syncSlKarton" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">📦</span>
+          <span class="sl-text">Karton</span>
+        </div>
+        <div class="slabel-toggle" id="syncSlJel" onclick="H.toggleSLabel(this)">
+          <span class="sl-icon">💧</span>
+          <span class="sl-text">Nem Çekici</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="mbtn-cancel" onclick="H.syncDismiss()">İptal</button>
+      <button class="mbtn-save" onclick="H.syncConfirm()">✓ Haftalık Plana Ekle</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- SYNC SUCCESS TOAST -->
+<div id="syncSuccessToast" style="
+  display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+  background:#181c2e; color:white; padding:12px 20px; border-radius:12px;
+  font-family:'Syne',sans-serif; font-size:13px; font-weight:600;
+  box-shadow:0 8px 32px rgba(0,0,0,.25); z-index:990; white-space:nowrap;
+"></div>
+<style>
+#syncSuccessToast.active { display:block; }
+</style>
 
 <!-- CONFIRM MODAL -->
 <div class="confirm-overlay" id="confirmOverlay">
