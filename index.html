@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Akkim Depo İthalat ve İhracat Planı</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1666,7 +1666,7 @@ input, textarea, select {
 
 <div class="launcher active" id="launcher">
   <div class="launcher-logo">🏭</div>
-  <div style="position:absolute;top:12px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#b2b9cc;letter-spacing:.5px;">v2.2</div>
+  <div style="position:absolute;top:12px;right:16px;font-size:10px;font-family:'IBM Plex Mono',monospace;color:#b2b9cc;letter-spacing:.5px;">v2.3</div>
   <h1>Akkim Depolama Merkezi<br><span style="color:var(--accent)">İthalat ve İhracat Planı</span></h1>
 
   <!-- USER PICKER -->
@@ -1754,11 +1754,10 @@ input, textarea, select {
 
 <!-- SCHEDULE -->
 <div id="schedulePage" class="page">
-  <header class="app-header">
+  <header class="app-header" style="flex-wrap:wrap;height:auto;min-height:60px;padding:8px 32px;">
     <div class="logo">
       <div class="logo-icon">🏭</div>
       <div class="logo-text">DEPO <span>RANDEVU</span></div>
-      <div id="schedDateBadge" style="margin-left:12px;padding:4px 12px;border-radius:20px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;"></div>
     </div>
     <div class="header-right">
       <button class="nav-back-btn" onclick="R.goHome()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> Takvime Dön</button>
@@ -1766,6 +1765,7 @@ input, textarea, select {
       <div class="chip adr" id="schedAdrChip">IMO'lu: 0/0</div>
       <div class="chip normal" id="schedNormalChip">IMO'suz: 0/0</div>
     </div>
+    <div id="schedDateBadge" style="width:100%;padding:2px 0 6px 0;font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);letter-spacing:.3px;display:none;"></div>
   </header>
 
   <div class="schedule-body">
@@ -2357,7 +2357,8 @@ function openSchedule() {
   var badge = document.getElementById('schedDateBadge');
   if (badge) {
     var d = parseKey(selectedDate);
-    badge.textContent = d.toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    badge.textContent = '📅 ' + d.toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    badge.style.display = 'block';
   }
   render('adr'); render('normal');
 }
