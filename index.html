@@ -1758,6 +1758,7 @@ input, textarea, select {
     <div class="logo">
       <div class="logo-icon">🏭</div>
       <div class="logo-text">DEPO <span>RANDEVU</span></div>
+      <div id="schedDateBadge" style="margin-left:12px;padding:4px 12px;border-radius:20px;background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;"></div>
     </div>
     <div class="header-right">
       <button class="nav-back-btn" onclick="R.goHome()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg> Takvime Dön</button>
@@ -1846,8 +1847,11 @@ input, textarea, select {
       </div>
     </div>
     <div class="header-right">
+      <button class="nav-back-btn" id="hNavHome" onclick="goLauncher()" style="display:none"></button>
+      <button class="nav-switch-btn" id="hNavSwitch" onclick="openApp('randevu')" style="display:none"></button>
       <button class="hbtn" onclick="H.goToday()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Bu Hafta</button>
       <span id="adminBtnWrapper"></span>
+      <div id="hUserChip" class="current-user-chip" onclick="changeUser()" style="display:none"></div>
     </div>
   </div>
   <div class="header-bottom-row">
@@ -1970,7 +1974,7 @@ input, textarea, select {
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbGW1xiyRpxQmLIWLYQ3t7Ppq9tHKe9Ec",
@@ -1984,70 +1988,177 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// ── LOCAL STORAGE HELPERS ──
+const LS_WEEKLY = 'akkim_weekly_v1';
+const LS_NOTES  = 'akkim_notes_v1';
+const LS_BOOKINGS = 'akkim_bookings_v1';
+
+function lsGet(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+  catch(e) { return null; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+// ── SYNC STATUS UI ──
+function showSyncStatus(ok, msg) {
+  var el = document.getElementById('_syncStatusBar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_syncStatusBar';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;transition:opacity .5s;';
+    document.body.appendChild(el);
+  }
+  el.style.background = ok ? '#16a34a' : '#d93a5a';
+  el.style.color = 'white';
+  el.style.opacity = '1';
+  el.textContent = msg;
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.style.opacity = '0'; }, ok ? 1500 : 4000);
+}
+
 // ── DB HELPERS ──
 
-// RANDEVU: allBookings objesi { "YYYY-MM-DD": { adr:{}, normal:{} } }
+// RANDEVU
 async function loadBookings() {
+  const local = lsGet(LS_BOOKINGS) || {};
+  const hasLocal = Object.keys(local).length > 0;
+  if (hasLocal) {
+    // localStorage var → onu kullan, remote sadece yeni tarihleri ekler
+    try {
+      const snap = await getDocs(collection(db, 'bookings'));
+      const remote = {};
+      snap.forEach(d => { remote[d.id] = d.data(); });
+      const merged = Object.assign({}, remote, local); // local kazanır
+      lsSet(LS_BOOKINGS, merged);
+      return merged;
+    } catch(e) {
+      console.warn('[DB] Firestore okuma başarısız, localStorage kullanılıyor:', e.message);
+      return local;
+    }
+  }
+  // localStorage boş → Firestore'dan bootstrap
   try {
     const snap = await getDocs(collection(db, 'bookings'));
-    const result = {};
-    snap.forEach(d => { result[d.id] = d.data(); });
-    return result;
-  } catch(e) { console.error('loadBookings:', e); return {}; }
+    const remote = {};
+    snap.forEach(d => { remote[d.id] = d.data(); });
+    if (Object.keys(remote).length > 0) lsSet(LS_BOOKINGS, remote);
+    return remote;
+  } catch(e) {
+    console.warn('[DB] Firestore bootstrap başarısız:', e.message);
+    return {};
+  }
 }
 
 async function saveBookingDate(dateKey, bookingData) {
+  // Önce localStorage'a yaz
+  const all = lsGet(LS_BOOKINGS) || {};
+  all[dateKey] = bookingData;
+  lsSet(LS_BOOKINGS, all);
+  // Arka planda Firestore'a da yaz
   try {
     await setDoc(doc(db, 'bookings', dateKey), bookingData);
-  } catch(e) { console.error('saveBookingDate:', e); }
+  } catch(e) { console.warn('[DB] Firestore yazma başarısız (randevu):', e.message); }
 }
 
-// HAFTALIK: data objesi { "YYYY-Www": { personId_dayIdx: [...] } }
+// HAFTALIK
 async function loadWeeklyData() {
+  // Önce localStorage'dan oku — anında, güvenilir
+  const local = lsGet(LS_WEEKLY) || {};
+  const hasLocal = Object.keys(local).length > 0;
+  console.log('[DB] loadWeeklyData localStorage:', hasLocal ? Object.keys(local).length + ' hafta' : 'BOŞ');
+
+  if (hasLocal) {
+    // localStorage'da veri var → direkt kullan, Firestore'dan merge etme
+    // Arka planda Firestore'a eksik haftaları yaz (tek yönlü senkronizasyon)
+    try {
+      const snap = await getDocs(collection(db, 'weeklyplan'));
+      const remote = {};
+      snap.forEach(d => { remote[d.id] = d.data(); });
+      // Sadece localStorage'da OLMAYAN haftaları remote'dan al
+      const onlyRemote = {};
+      Object.keys(remote).forEach(function(wk) {
+        if (!local[wk]) onlyRemote[wk] = remote[wk];
+      });
+      if (Object.keys(onlyRemote).length > 0) {
+        const merged = Object.assign({}, local, onlyRemote);
+        lsSet(LS_WEEKLY, merged);
+        console.log('[DB] Firestore\'dan', Object.keys(onlyRemote).length, 'eski hafta eklendi');
+        return merged;
+      }
+    } catch(e) {
+      console.warn('[DB] Firestore okuma atlandı:', e.message);
+    }
+    return local;
+  }
+
+  // localStorage boş → Firestore'dan bootstrap yap
   try {
     const snap = await getDocs(collection(db, 'weeklyplan'));
-    const result = {};
-    snap.forEach(d => { result[d.id] = d.data(); });
-    console.log('[DB] loadWeeklyData ✓', Object.keys(result).length, 'hafta');
-    return result;
-  } catch(e) { console.error('[DB] loadWeeklyData HATA:', e); return {}; }
+    const remote = {};
+    snap.forEach(d => { remote[d.id] = d.data(); });
+    if (Object.keys(remote).length > 0) {
+      lsSet(LS_WEEKLY, remote);
+      console.log('[DB] Firestore\'dan', Object.keys(remote).length, 'hafta yüklendi (bootstrap)');
+    }
+    return remote;
+  } catch(e) {
+    console.warn('[DB] Firestore bootstrap başarısız:', e.message);
+    return {};
+  }
 }
 
-async function saveWeeklyWeek(weekKey, weekData) {
+async function saveWeeklyWeek(wk, weekData) {
+  // 1. localStorage'a ANINDA yaz
+  const all = lsGet(LS_WEEKLY) || {};
+  all[wk] = weekData;
+  lsSet(LS_WEEKLY, all);
+  // Doğrulama
+  const verify = lsGet(LS_WEEKLY);
+  const ok = verify && verify[wk] && JSON.stringify(verify[wk]) === JSON.stringify(weekData);
+  console.log('[SAVE]', wk, ok ? '✅ localStorage OK' : '❌ localStorage HATA', 'entries:', weekData ? Object.keys(weekData).length : 0);
+  // 2. Arka planda Firestore'a yaz
   try {
-    console.log('[DB] saveWeeklyWeek →', weekKey, weekData);
-    await setDoc(doc(db, 'weeklyplan', weekKey), weekData);
-    console.log('[DB] saveWeeklyWeek ✓', weekKey);
+    await setDoc(doc(db, 'weeklyplan', wk), weekData);
+    console.log('[SAVE]', wk, '✅ Firestore OK');
   } catch(e) {
-    console.error('[DB] saveWeeklyWeek HATA:', e);
-    // Kullanıcıya bildir
-    var toast = document.getElementById('saveErrorToast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'saveErrorToast';
-      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#d93a5a;color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.2);';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = '⚠️ Kayıt başarısız: ' + (e.message || e.code || 'Bağlantı hatası');
-    toast.style.display = 'block';
-    setTimeout(function(){ toast.style.display = 'none'; }, 4000);
+    console.warn('[SAVE]', wk, '⚠️ Firestore başarısız:', e.message);
   }
 }
 
 // NOTES
 async function loadNotes() {
+  const local = lsGet(LS_NOTES) || {};
+  const hasLocal = Object.keys(local).length > 0;
+  if (hasLocal) {
+    // localStorage var → onu kullan, remote sadece eksik haftaları tamamlar
+    try {
+      const snap = await getDocs(collection(db, 'notes'));
+      const remote = {};
+      snap.forEach(d => { remote[d.id] = d.data(); });
+      const merged = Object.assign({}, remote, local); // local kazanır
+      lsSet(LS_NOTES, merged);
+      return merged;
+    } catch(e) { return local; }
+  }
+  // localStorage boş → Firestore'dan bootstrap
   try {
     const snap = await getDocs(collection(db, 'notes'));
-    const result = {};
-    snap.forEach(d => { result[d.id] = d.data(); });
-    return result;
-  } catch(e) { console.error('loadNotes:', e); return {}; }
+    const remote = {};
+    snap.forEach(d => { remote[d.id] = d.data(); });
+    if (Object.keys(remote).length > 0) lsSet(LS_NOTES, remote);
+    return remote;
+  } catch(e) { return {}; }
 }
 
 async function saveNoteWeek(weekKey, noteData) {
+  const all = lsGet(LS_NOTES) || {};
+  all[weekKey] = noteData;
+  lsSet(LS_NOTES, all);
   try {
     await setDoc(doc(db, 'notes', weekKey), noteData);
-  } catch(e) { console.error('saveNoteWeek:', e); }
+  } catch(e) { console.warn('[DB] Firestore yazma başarısız (notlar):', e.message); }
 }
 
 // PERSONS
@@ -2263,6 +2374,12 @@ function openSchedule() {
   document.getElementById('homePage').classList.remove('active');
   document.getElementById('schedulePage').classList.add('active');
   var _sdc=document.getElementById('schedDateChip'); if(_sdc) _sdc.textContent=formatDateShort(selectedDate);
+  // Tarih badge
+  var badge = document.getElementById('schedDateBadge');
+  if (badge) {
+    var d = parseKey(selectedDate);
+    badge.textContent = d.toLocaleDateString('tr-TR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  }
   render('adr'); render('normal');
 }
 
@@ -2960,7 +3077,7 @@ function dropEntry(e, targetPersonId, targetDayIdx) {
   _drag = null;
   _touchDrag = null;
   render();
-  if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
+  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
 }
 
 
@@ -3251,7 +3368,7 @@ function syncConfirm() {
       jel:     document.getElementById('syncSlJel')     ? document.getElementById('syncSlJel').classList.contains('checked')     : false,
     };
     d[ck].push({ count: syncCnt, desc: syncDesc2, type: type, labels: syncLabels });
-    if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
+    if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
     // Haftalık plan aktifse render et
     try {
       if(weekKey(currentMonday) === wk && document.getElementById('shell-haftalik') &&
@@ -3377,7 +3494,7 @@ function saveEntry() {
   }
   closeModal();
   render();
-  if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
+  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
 }
 
 // Firestore'a göndermeden önce undefined/null temizle, tüm array itemleri normalize et
@@ -3417,7 +3534,7 @@ function deleteEntry(personId, dayIdx, entryIdx, e) {
   showConfirm(label + ' silinsin mi?', function() {
     if (d[ck]) { d[ck].splice(entryIdx, 1); if (d[ck].length === 0) delete d[ck]; }
     render();
-    if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
+    if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
   });
 }
 
@@ -3439,7 +3556,7 @@ function toggleComplete() {
   d[ck][modalCtx_h.editIdx].completed = !d[ck][modalCtx_h.editIdx].completed;
   closeModal();
   render();
-  if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
+  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
 }
 
 function toggleSLabel(el, key) {
@@ -3492,6 +3609,25 @@ function setPersons(list) {
   PERSONS = list.map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
 }
 
+function initWeekly() {
+  render(); // önce boş render (skeleton)
+  if (window.DB) {
+    Promise.all([
+      window.DB.loadWeeklyData(),
+      window.DB.loadNotes(),
+      window.DB.loadPersons()
+    ]).then(function(results) {
+      if (results[0]) data  = results[0];
+      if (results[1]) notes = results[1];
+      if (results[2]) PERSONS = results[2].map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
+      render();
+    }).catch(function(e) {
+      console.warn('initWeekly hata:', e);
+      render();
+    });
+  }
+}
+
 window.H = {
   openMonthly: openMonthly,
   closeMonthly: closeMonthly,
@@ -3530,7 +3666,8 @@ window.H = {
   setData: setData,
   setNotes: setNotes,
   setPersons: setPersons,
-  toggleSLabel: toggleSLabel
+  toggleSLabel: toggleSLabel,
+  initWeekly: initWeekly
 };
 
 })();
@@ -3564,20 +3701,7 @@ function openApp(app) {
   if (app === 'haftalik') {
     if (!haftalikInited) {
       haftalikInited = true;
-      if (window.DB) {
-        Promise.all([
-          window.DB.loadWeeklyData(),
-          window.DB.loadNotes(),
-          window.DB.loadPersons()
-        ]).then(function(results) {
-          if (results[0]) window.H.setData(results[0]);
-          if (results[1]) window.H.setNotes(results[1]);
-          if (results[2]) window.H.setPersons(results[2]);
-          window.H.render();
-        }).catch(function() { window.H.render(); });
-      } else {
-        window.H.render();
-      }
+      window.H.initWeekly();
     }
   }
   injectNavButtons(app);
@@ -3627,41 +3751,22 @@ function injectHomeHeader() {
 }
 
 function injectNavButtons(app) {
-  if (app === 'randevu') return; // randevu butonları HTML'de sabit
-  var header = document.querySelector('#shell-haftalik .header');
-  if (!header) return;
-  header.querySelectorAll('.nav-back-btn,.nav-switch-btn,.current-user-chip').forEach(function(el) { el.remove(); });
-
-  var icoHome = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z\"/><path d=\"M9 21V12h6v9\"/></svg>";
-  var icoCal  = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/></svg>";
-  var icoPlan = "<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M9 9h6M9 12h6M9 15h4\"/></svg>";
-
-  var backBtn = document.createElement('button');
-  backBtn.className = 'nav-back-btn';
-  backBtn.innerHTML = icoHome + ' Ana Sayfa';
-  backBtn.onclick = goLauncher;
-
-  var switchBtn = document.createElement('button');
-  switchBtn.className = 'nav-switch-btn';
-  switchBtn.innerHTML = app === 'randevu' ? (icoPlan + ' Haftalık Plan') : (icoCal + ' Randevu');
-  switchBtn.onclick = switchApp;
-
-  var rightDiv = app === 'haftalik'
-    ? header.querySelector('.header-top-row .header-right')
-    : header.querySelector('.header-right');
-  if (rightDiv) {
-    rightDiv.prepend(switchBtn);
-    rightDiv.prepend(backBtn);
-    if (window._currentUser) {
-      var uChip = document.createElement('div');
-      uChip.className = 'current-user-chip';
+  var icoHome = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>';
+  var icoCal  = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+  if (app === 'haftalik') {
+    var hHome = document.getElementById('hNavHome');
+    var hSwitch = document.getElementById('hNavSwitch');
+    var hChip = document.getElementById('hUserChip');
+    if (hHome) { hHome.innerHTML = icoHome + ' Ana Sayfa'; hHome.style.display = ''; }
+    if (hSwitch) { hSwitch.innerHTML = icoCal + ' Randevu'; hSwitch.style.display = ''; }
+    if (hChip && window._currentUser) {
       var dotColor = window._currentUser.role==='admin'?'#2563eb':window._currentUser.role==='guest'?'#9ca3af':'#16a34a';
-      uChip.innerHTML = '<span class="cu-dot" style="background:'+dotColor+'"></span>' + window._currentUser.name;
-      uChip.title = 'Kullanıcıyı değiştir';
-      uChip.onclick = changeUser;
-      rightDiv.appendChild(uChip);
+      hChip.innerHTML = '<span class="cu-dot" style="background:'+dotColor+'"></span>' + window._currentUser.name;
+      hChip.style.display = '';
     }
     updateAdminBtn();
+  } else if (app === 'randevu') {
+    injectHomeHeader();
   }
 }
 
@@ -3795,24 +3900,12 @@ function loadPersonsForUserList() {
 function showUserSelect() { changeUser(); }
 
 function openMonthlyFromLauncher() {
-  // Haftalık planı başlat (gerekirse) sonra monthly aç
   if (!window._currentUser) return;
   if (!haftalikInited) {
     haftalikInited = true;
-    if (window.DB) {
-      Promise.all([
-        window.DB.loadWeeklyData(),
-        window.DB.loadNotes(),
-        window.DB.loadPersons()
-      ]).then(function(results) {
-        if (results[0]) window.H.setData(results[0]);
-        if (results[1]) window.H.setNotes(results[1]);
-        if (results[2]) window.H.setPersons(results[2]);
-        window.H.openMonthly();
-      }).catch(function() { window.H.openMonthly(); });
-    } else {
-      window.H.openMonthly();
-    }
+    window.H.initWeekly();
+    // initWeekly async, monthly'i biraz sonra aç
+    setTimeout(function() { window.H.openMonthly(); }, 800);
   } else {
     window.H.openMonthly();
   }
