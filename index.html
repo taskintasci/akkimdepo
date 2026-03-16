@@ -2053,48 +2053,20 @@ async function saveBookingDate(dateKey, bookingData) {
 
 // HAFTALIK
 async function loadWeeklyData() {
-  // Önce localStorage'dan oku — anında, güvenilir
-  const local = lsGet(LS_WEEKLY) || {};
-  const hasLocal = Object.keys(local).length > 0;
-  console.log('[DB] loadWeeklyData localStorage:', hasLocal ? Object.keys(local).length + ' hafta' : 'BOŞ');
-
-  if (hasLocal) {
-    // localStorage'da veri var → direkt kullan, Firestore'dan merge etme
-    // Arka planda Firestore'a eksik haftaları yaz (tek yönlü senkronizasyon)
-    try {
-      const snap = await getDocs(collection(db, 'weeklyplan'));
-      const remote = {};
-      snap.forEach(d => { remote[d.id] = d.data(); });
-      // Sadece localStorage'da OLMAYAN haftaları remote'dan al
-      const onlyRemote = {};
-      Object.keys(remote).forEach(function(wk) {
-        if (!local[wk]) onlyRemote[wk] = remote[wk];
-      });
-      if (Object.keys(onlyRemote).length > 0) {
-        const merged = Object.assign({}, local, onlyRemote);
-        lsSet(LS_WEEKLY, merged);
-        console.log('[DB] Firestore\'dan', Object.keys(onlyRemote).length, 'eski hafta eklendi');
-        return merged;
-      }
-    } catch(e) {
-      console.warn('[DB] Firestore okuma atlandı:', e.message);
-    }
-    return local;
-  }
-
-  // localStorage boş → Firestore'dan bootstrap yap
+  // Randevu gibi: Firestore önce, localStorage yedek
   try {
     const snap = await getDocs(collection(db, 'weeklyplan'));
     const remote = {};
     snap.forEach(d => { remote[d.id] = d.data(); });
-    if (Object.keys(remote).length > 0) {
-      lsSet(LS_WEEKLY, remote);
-      console.log('[DB] Firestore\'dan', Object.keys(remote).length, 'hafta yüklendi (bootstrap)');
-    }
+    // Firestore başarılı → localStorage'a da kaydet (offline yedek)
+    lsSet(LS_WEEKLY, remote);
+    console.log('[DB] Firestore\'dan', Object.keys(remote).length, 'hafta yüklendi');
     return remote;
   } catch(e) {
-    console.warn('[DB] Firestore bootstrap başarısız:', e.message);
-    return {};
+    // Firestore erişilemez → localStorage'dan devam et
+    const local = lsGet(LS_WEEKLY) || {};
+    console.warn('[DB] Firestore erişilemedi, localStorage kullanılıyor:', e.message);
+    return local;
   }
 }
 
@@ -2123,6 +2095,7 @@ async function loadNotes() {
     const snap = await getDocs(collection(db, 'notes'));
     const remote = {};
     snap.forEach(d => { remote[d.id] = d.data(); });
+    // Firestore kazanır (başka cihazdan gelen veri)
     const merged = Object.assign({}, local, remote);
     lsSet(LS_NOTES, merged);
     return merged;
