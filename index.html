@@ -3594,7 +3594,7 @@ function initWeekly() {
       window.DB.loadPersons()
     ]).then(function(results) {
       if (results[0]) data  = results[0];
-      if (results[1]) PERSONS = results[2].map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
+      if (results[1]) PERSONS = results[1].map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
       render();
     }).catch(function(e) {
       console.warn('initWeekly hata:', e);
