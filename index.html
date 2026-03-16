@@ -1871,7 +1871,6 @@ input, textarea, select {
       <tbody id="tableBody"></tbody>
     </table>
   </div>
-  <div class="notes-grid" id="notesGrid"></div>
 </div>
 </div>
 
@@ -2992,9 +2991,6 @@ function render() {
     var ei = Array.from(el.parentNode.querySelectorAll('.entry-chip')).indexOf(el);
     if (pid !== undefined && di !== undefined) touchDragInit(el, pid, di, ei);
   });
-
-  // ── NOTES GRID ──
-  renderNotes(days, wk);
 }
 
 function renderNotes(days, wk) {
@@ -3595,12 +3591,10 @@ function initWeekly() {
   if (window.DB) {
     Promise.all([
       window.DB.loadWeeklyData(),
-      window.DB.loadNotes(),
       window.DB.loadPersons()
     ]).then(function(results) {
       if (results[0]) data  = results[0];
-      if (results[1]) notes = results[1];
-      if (results[2]) PERSONS = results[2].map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
+      if (results[1]) PERSONS = results[2].map(function(p) { return { id: p.id||'', name: p.name||'', role: p.role||'' }; });
       render();
     }).catch(function(e) {
       console.warn('initWeekly hata:', e);
