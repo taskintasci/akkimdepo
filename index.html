@@ -1847,8 +1847,8 @@ input, textarea, select {
       </div>
     </div>
     <div class="header-right">
-      <button class="nav-back-btn" id="hNavHome" onclick="goLauncher()" style="display:none"></button>
-      <button class="nav-switch-btn" id="hNavSwitch" onclick="openApp('randevu')" style="display:none"></button>
+      <button class="nav-back-btn" id="hNavHome" onclick="goLauncher()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg> Ana Sayfa</button>
+      <button class="nav-switch-btn" id="hNavSwitch" onclick="openApp('randevu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Randevu</button>
       <button class="hbtn" onclick="H.goToday()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Bu Hafta</button>
       <span id="adminBtnWrapper"></span>
       <div id="hUserChip" class="current-user-chip" onclick="changeUser()" style="display:none"></div>
@@ -1871,6 +1871,7 @@ input, textarea, select {
       <tbody id="tableBody"></tbody>
     </table>
   </div>
+  <div class="notes-grid" id="notesGrid"></div>
 </div>
 </div>
 
@@ -2162,6 +2163,33 @@ window.DB = { loadBookings, saveBookingDate, loadWeeklyData, saveWeeklyWeek, loa
 // Signal that Firebase is ready
 window._firebaseReady = true;
 window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<!-- Firebase engellenirse localStorage ile devam et -->
+<script>
+(function() {
+  function lsGet(k) { try { var v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch(e){ return null; } }
+  function lsSet(k,v) { try { localStorage.setItem(k,JSON.stringify(v)); } catch(e){} }
+  var W='akkim_weekly_v1', N='akkim_notes_v1', B='akkim_bookings_v1';
+
+  // 2 saniye sonra window.DB hâlâ yoksa localStorage ile devam et
+  setTimeout(function() {
+    if (window.DB) return; // Firebase zaten yüklendi
+    console.warn('[DB] Firebase yüklenemedi, localStorage kullanılıyor');
+    window.DB = {
+      loadBookings:    function() { return Promise.resolve(lsGet(B)||{}); },
+      saveBookingDate: function(dk,bd) { var a=lsGet(B)||{}; a[dk]=bd; lsSet(B,a); return Promise.resolve(); },
+      loadWeeklyData:  function() { return Promise.resolve(lsGet(W)||{}); },
+      saveWeeklyWeek:  function(wk,wd) { var a=lsGet(W)||{}; a[wk]=wd; lsSet(W,a); console.log('[LS]',wk,'kaydedildi'); return Promise.resolve(); },
+      loadNotes:       function() { return Promise.resolve(lsGet(N)||{}); },
+      saveNoteWeek:    function(wk,nd) { var a=lsGet(N)||{}; a[wk]=nd; lsSet(N,a); return Promise.resolve(); },
+      loadPersons:     function() { return Promise.resolve(null); },
+      savePersons:     function() { return Promise.resolve(); }
+    };
+    window._firebaseReady = true;
+    window.dispatchEvent(new Event('firebaseReady'));
+  }, 2000);
+})();
 </script>
 
 <script>
@@ -2998,6 +3026,7 @@ function render() {
 function renderNotes(days, wk) {
   const n = notesFor(wk);
   const grid = document.getElementById('notesGrid');
+  if (!grid) return;
   const cols = days.length;
 
   // Sütun genişlikleri tablo ile aynı: th-name (150px) + günler (1fr)
