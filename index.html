@@ -2008,14 +2008,30 @@ async function loadWeeklyData() {
     const snap = await getDocs(collection(db, 'weeklyplan'));
     const result = {};
     snap.forEach(d => { result[d.id] = d.data(); });
+    console.log('[DB] loadWeeklyData ✓', Object.keys(result).length, 'hafta');
     return result;
-  } catch(e) { console.error('loadWeeklyData:', e); return {}; }
+  } catch(e) { console.error('[DB] loadWeeklyData HATA:', e); return {}; }
 }
 
 async function saveWeeklyWeek(weekKey, weekData) {
   try {
+    console.log('[DB] saveWeeklyWeek →', weekKey, weekData);
     await setDoc(doc(db, 'weeklyplan', weekKey), weekData);
-  } catch(e) { console.error('saveWeeklyWeek:', e); }
+    console.log('[DB] saveWeeklyWeek ✓', weekKey);
+  } catch(e) {
+    console.error('[DB] saveWeeklyWeek HATA:', e);
+    // Kullanıcıya bildir
+    var toast = document.getElementById('saveErrorToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'saveErrorToast';
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#d93a5a;color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.2);';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = '⚠️ Kayıt başarısız: ' + (e.message || e.code || 'Bağlantı hatası');
+    toast.style.display = 'block';
+    setTimeout(function(){ toast.style.display = 'none'; }, 4000);
+  }
 }
 
 // NOTES
@@ -2944,7 +2960,7 @@ function dropEntry(e, targetPersonId, targetDayIdx) {
   _drag = null;
   _touchDrag = null;
   render();
-  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+  if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
 }
 
 
@@ -3235,7 +3251,7 @@ function syncConfirm() {
       jel:     document.getElementById('syncSlJel')     ? document.getElementById('syncSlJel').classList.contains('checked')     : false,
     };
     d[ck].push({ count: syncCnt, desc: syncDesc2, type: type, labels: syncLabels });
-    if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+    if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
     // Haftalık plan aktifse render et
     try {
       if(weekKey(currentMonday) === wk && document.getElementById('shell-haftalik') &&
@@ -3344,20 +3360,49 @@ function saveEntry() {
   const d  = dataFor(wk);
   const ck = cellKey(modalCtx_h.personId, modalCtx_h.dayIdx);
   if (!d[ck]) d[ck] = [];
+  const entry = {
+    count: count,
+    desc: desc,
+    type: selectedType,
+    pinned: document.getElementById('fPin').checked ? true : false,
+    completed: false,
+    labels: getSLabels()
+  };
   if (modalCtx_h.editIdx !== null && modalCtx_h.editIdx !== undefined) {
     const prev = d[ck][modalCtx_h.editIdx] || {};
-    d[ck][modalCtx_h.editIdx] = { count, desc, type: selectedType,
-      pinned: document.getElementById('fPin').checked,
-      labels: getSLabels(),
-      completed: prev.completed || false };
+    entry.completed = prev.completed ? true : false;
+    d[ck][modalCtx_h.editIdx] = entry;
   } else {
-    d[ck].push({ count, desc, type: selectedType,
-      pinned: document.getElementById('fPin').checked,
-      labels: getSLabels() });
+    d[ck].push(entry);
   }
   closeModal();
   render();
-  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+  if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
+}
+
+// Firestore'a göndermeden önce undefined/null temizle, tüm array itemleri normalize et
+function cleanForFirestore(weekData) {
+  var cleaned = {};
+  Object.keys(weekData).forEach(function(ck) {
+    var arr = weekData[ck];
+    if (!Array.isArray(arr) || arr.length === 0) return;
+    cleaned[ck] = arr.map(function(e) {
+      return {
+        count:     e.count     || '',
+        desc:      e.desc      || '',
+        type:      e.type      || '',
+        pinned:    e.pinned    ? true : false,
+        completed: e.completed ? true : false,
+        labels: {
+          ozel:    (e.labels && e.labels.ozel)    ? true : false,
+          lashing: (e.labels && e.labels.lashing) ? true : false,
+          karton:  (e.labels && e.labels.karton)  ? true : false,
+          jel:     (e.labels && e.labels.jel)     ? true : false,
+        }
+      };
+    });
+  });
+  return cleaned;
 }
 
 function deleteEntry(personId, dayIdx, entryIdx, e) {
@@ -3372,7 +3417,7 @@ function deleteEntry(personId, dayIdx, entryIdx, e) {
   showConfirm(label + ' silinsin mi?', function() {
     if (d[ck]) { d[ck].splice(entryIdx, 1); if (d[ck].length === 0) delete d[ck]; }
     render();
-    if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+    if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
   });
 }
 
@@ -3394,7 +3439,7 @@ function toggleComplete() {
   d[ck][modalCtx_h.editIdx].completed = !d[ck][modalCtx_h.editIdx].completed;
   closeModal();
   render();
-  if (window.DB) window.DB.saveWeeklyWeek(wk, JSON.parse(JSON.stringify(dataFor(wk))));
+  if (window.DB) window.DB.saveWeeklyWeek(wk, cleanForFirestore(dataFor(wk)));
 }
 
 function toggleSLabel(el, key) {
