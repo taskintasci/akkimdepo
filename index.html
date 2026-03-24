@@ -1974,7 +1974,7 @@ input, textarea, select {
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDbGW1xiyRpxQmLIWLYQ3t7Ppq9tHKe9Ec",
@@ -1986,155 +1986,116 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 
-// ── LOCAL STORAGE HELPERS ──
-const LS_WEEKLY = 'akkim_weekly_v1';
-const LS_NOTES  = 'akkim_notes_v1';
-const LS_BOOKINGS = 'akkim_bookings_v1';
+// ── LOCAL STORAGE YEDEK ──
+const LS_W = 'akkim_weekly_v1';
+const LS_B = 'akkim_bookings_v1';
+function lsGet(k) { try { const v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch(e){ return null; } }
+function lsSet(k,v) { try { localStorage.setItem(k,JSON.stringify(v)); } catch(e){} }
 
-function lsGet(key) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+// ── CANLI VERİ ÖNBELLEĞI ──
+// Firestore onSnapshot'tan gelen son veri burada tutulur
+let _weeklyCache   = lsGet(LS_W) || {};
+let _bookingsCache = lsGet(LS_B) || {};
+
+// ── REAL-TIME DİNLEYİCİLER ──
+
+// Haftalık plan — tüm koleksiyonu dinle
+onSnapshot(collection(db, 'weeklyplan'), (snap) => {
+  const fresh = {};
+  snap.forEach(d => { fresh[d.id] = d.data(); });
+  _weeklyCache = fresh;
+  lsSet(LS_W, fresh);
+  console.log('[RT] weeklyplan güncellendi:', Object.keys(fresh).length, 'hafta');
+  // Haftalık plan açıksa otomatik yenile
+  try {
+    if (window.H && document.getElementById('shell-haftalik') &&
+        document.getElementById('shell-haftalik').classList.contains('active')) {
+      window.H._rtUpdate(fresh);
+    }
+  } catch(e) {}
+}, (err) => {
+  console.warn('[RT] weeklyplan dinlenemedi:', err.message);
+});
+
+// Randevu bookings — tüm koleksiyonu dinle
+onSnapshot(collection(db, 'bookings'), (snap) => {
+  const fresh = {};
+  snap.forEach(d => { fresh[d.id] = d.data(); });
+  _bookingsCache = fresh;
+  lsSet(LS_B, fresh);
+  console.log('[RT] bookings güncellendi');
+  // Randevu açıksa otomatik yenile
+  try {
+    if (window.R && document.getElementById('shell-randevu') &&
+        document.getElementById('shell-randevu').classList.contains('active')) {
+      window.R._rtUpdate(fresh);
+    }
+  } catch(e) {}
+}, (err) => {
+  console.warn('[RT] bookings dinlenemedi:', err.message);
+});
+
+// Persons — config dökümanını dinle
+onSnapshot(doc(db, 'config', 'persons'), (snap) => {
+  if (!snap.exists()) return;
+  const list = snap.data().list;
+  console.log('[RT] persons güncellendi:', list.length, 'kişi');
+  try { if (window.H) window.H.setPersons(list); } catch(e) {}
+  try {
+    if (window.H && document.getElementById('shell-haftalik') &&
+        document.getElementById('shell-haftalik').classList.contains('active')) {
+      window.H.render();
+    }
+  } catch(e) {}
+}, (err) => {
+  console.warn('[RT] persons dinlenemedi:', err.message);
+});
+
+// ── DB API ──
+async function loadBookings()             { return _bookingsCache; }
+async function loadWeeklyData()           { return _weeklyCache; }
+async function loadPersons() {
+  try { const s=await getDoc(doc(db,'config','persons')); return s.exists()?s.data().list:null; }
   catch(e) { return null; }
 }
-function lsSet(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+async function loadNotes()                { return {}; } // notlar kaldırıldı
+
+async function saveBookingDate(dk, bd) {
+  const all = Object.assign({}, _bookingsCache); all[dk] = bd; _bookingsCache = all; lsSet(LS_B, all);
+  try { await setDoc(doc(db,'bookings',dk), bd); }
+  catch(e) { console.warn('[SAVE] bookings başarısız:', e.message); }
 }
 
-// ── SYNC STATUS UI ──
-function showSyncStatus(ok, msg) {
-  var el = document.getElementById('_syncStatusBar');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_syncStatusBar';
-    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;transition:opacity .5s;';
-    document.body.appendChild(el);
-  }
-  el.style.background = ok ? '#16a34a' : '#d93a5a';
-  el.style.color = 'white';
-  el.style.opacity = '1';
-  el.textContent = msg;
-  clearTimeout(el._t);
-  el._t = setTimeout(function(){ el.style.opacity = '0'; }, ok ? 1500 : 4000);
-}
-
-// ── DB HELPERS ──
-
-// RANDEVU
-async function loadBookings() {
-  // Önce localStorage'dan yükle
-  const local = lsGet(LS_BOOKINGS) || {};
-  // Arka planda Firestore'dan senkronize et
+async function saveWeeklyWeek(wk, wd) {
+  // Önbelleği hemen güncelle (kendi yaptığın değişiklik anında görünsün)
+  _weeklyCache = Object.assign({}, _weeklyCache); _weeklyCache[wk] = wd; lsSet(LS_W, _weeklyCache);
   try {
-    const snap = await getDocs(collection(db, 'bookings'));
-    const remote = {};
-    snap.forEach(d => { remote[d.id] = d.data(); });
-    // Remote daha doluysa birleştir
-    const merged = Object.assign({}, local, remote);
-    lsSet(LS_BOOKINGS, merged);
-    return merged;
-  } catch(e) {
-    console.warn('[DB] Firestore okuma başarısız, localStorage kullanılıyor:', e.message);
-    return local;
-  }
-}
-
-async function saveBookingDate(dateKey, bookingData) {
-  // Önce localStorage'a yaz
-  const all = lsGet(LS_BOOKINGS) || {};
-  all[dateKey] = bookingData;
-  lsSet(LS_BOOKINGS, all);
-  // Arka planda Firestore'a da yaz
-  try {
-    await setDoc(doc(db, 'bookings', dateKey), bookingData);
-  } catch(e) { console.warn('[DB] Firestore yazma başarısız (randevu):', e.message); }
-}
-
-// HAFTALIK
-async function loadWeeklyData() {
-  // Randevu gibi: Firestore önce, localStorage yedek
-  try {
-    const snap = await getDocs(collection(db, 'weeklyplan'));
-    const remote = {};
-    snap.forEach(d => { remote[d.id] = d.data(); });
-    // Firestore başarılı → localStorage'a da kaydet (offline yedek)
-    lsSet(LS_WEEKLY, remote);
-    console.log('[DB] Firestore\'dan', Object.keys(remote).length, 'hafta yüklendi');
-    return remote;
-  } catch(e) {
-    // Firestore erişilemez → localStorage'dan devam et
-    const local = lsGet(LS_WEEKLY) || {};
-    console.warn('[DB] Firestore erişilemedi, localStorage kullanılıyor:', e.message);
-    return local;
-  }
-}
-
-async function saveWeeklyWeek(wk, weekData) {
-  // 1. localStorage'a ANINDA yaz
-  const all = lsGet(LS_WEEKLY) || {};
-  all[wk] = weekData;
-  lsSet(LS_WEEKLY, all);
-  // Doğrulama
-  const verify = lsGet(LS_WEEKLY);
-  const ok = verify && verify[wk] && JSON.stringify(verify[wk]) === JSON.stringify(weekData);
-  console.log('[SAVE]', wk, ok ? '✅ localStorage OK' : '❌ localStorage HATA', 'entries:', weekData ? Object.keys(weekData).length : 0);
-  // 2. Arka planda Firestore'a yaz
-  try {
-    await setDoc(doc(db, 'weeklyplan', wk), weekData);
+    await setDoc(doc(db,'weeklyplan',wk), wd);
     console.log('[SAVE]', wk, '✅ Firestore OK');
   } catch(e) {
     console.warn('[SAVE]', wk, '⚠️ Firestore başarısız:', e.message);
   }
 }
 
-// NOTES
-async function loadNotes() {
-  const local = lsGet(LS_NOTES) || {};
-  try {
-    const snap = await getDocs(collection(db, 'notes'));
-    const remote = {};
-    snap.forEach(d => { remote[d.id] = d.data(); });
-    // Firestore kazanır (başka cihazdan gelen veri)
-    const merged = Object.assign({}, local, remote);
-    lsSet(LS_NOTES, merged);
-    return merged;
-  } catch(e) {
-    return local;
-  }
-}
-
-async function saveNoteWeek(weekKey, noteData) {
-  const all = lsGet(LS_NOTES) || {};
-  all[weekKey] = noteData;
-  lsSet(LS_NOTES, all);
-  try {
-    await setDoc(doc(db, 'notes', weekKey), noteData);
-  } catch(e) { console.warn('[DB] Firestore yazma başarısız (notlar):', e.message); }
-}
-
-// PERSONS
-async function loadPersons() {
-  try {
-    const snap = await getDoc(doc(db, 'config', 'persons'));
-    if (snap.exists()) return snap.data().list;
-    return null;
-  } catch(e) { console.error('loadPersons:', e); return null; }
+async function saveNoteWeek(wk, nd) {
+  try { await setDoc(doc(db,'notes',wk), nd); } catch(e) {}
 }
 
 async function savePersons(list) {
   try {
-    // Ensure all fields exist to avoid Firestore stripping empty strings
-    const cleaned = list.map(p => ({ id: p.id || '', name: p.name || '', role: p.role || '' }));
-    await setDoc(doc(db, 'config', 'persons'), { list: cleaned });
+    const cleaned = list.map(p => ({ id:p.id||'', name:p.name||'', role:p.role||'' }));
+    await setDoc(doc(db,'config','persons'), { list: cleaned });
   } catch(e) { console.error('savePersons:', e); }
 }
 
-// Expose to window so our app scripts can call them
-window.DB = { loadBookings, saveBookingDate, loadWeeklyData, saveWeeklyWeek, loadNotes, saveNoteWeek, loadPersons, savePersons };
+window.DB = { loadBookings, saveBookingDate, loadWeeklyData, saveWeeklyWeek,
+              loadNotes, saveNoteWeek, loadPersons, savePersons };
 
-// Signal that Firebase is ready
 window._firebaseReady = true;
 window.dispatchEvent(new Event('firebaseReady'));
+console.log('[DB] Real-time dinleyiciler aktif ✅');
 </script>
 
 <!-- Firebase engellenirse localStorage ile devam et -->
@@ -2663,7 +2624,20 @@ window.R = {
     b.classList.add('show');
     setTimeout(function(){ b.classList.remove('show'); }, 2000);
   },
-  getSelectedDate: function() { return selectedDate; }
+  getSelectedDate: function() { return selectedDate; },
+  _rtUpdate: function(freshBookings) {
+    // Başka kullanıcıdan gelen Firestore güncellemesi
+    allBookings = freshBookings;
+    // Açık modal yoksa ekranı yenile
+    var overlay = document.getElementById('bookingOverlay');
+    if (!overlay || !overlay.classList.contains('active')) {
+      renderCalendar();
+      var sched = document.getElementById('schedulePage');
+      if (sched && sched.classList.contains('active') && selectedDate) {
+        render('adr'); render('normal');
+      }
+    }
+  }
 };
 
 })();
@@ -3642,7 +3616,23 @@ window.H = {
   setNotes: setNotes,
   setPersons: setPersons,
   toggleSLabel: toggleSLabel,
-  initWeekly: initWeekly
+  initWeekly: initWeekly,
+  _rtUpdate: function(freshData) {
+    // Başka kullanıcıdan gelen Firestore güncellemesi
+    // Sadece şu an açık olmayan hafta verilerini güncelle — kullanıcı kendi hafta üzerinde çalışıyorsa ezme
+    var currentWk = weekKey(currentMonday);
+    Object.keys(freshData).forEach(function(wk) {
+      if (wk !== currentWk) {
+        data[wk] = freshData[wk];
+      }
+    });
+    // Şu anki haftayı da güncelle ama modal açıksa dokunma
+    var overlay = document.getElementById('overlay');
+    if (!overlay || !overlay.classList.contains('active')) {
+      if (freshData[currentWk]) data[currentWk] = freshData[currentWk];
+    }
+    render();
+  }
 };
 
 })();
