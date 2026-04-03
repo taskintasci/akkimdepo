@@ -44,7 +44,13 @@
     <!-- ── App Header (hidden until user selected) ─────────────────────── -->
     <header class="app-header" id="app-header" hidden>
       <button class="app-header__logo" id="btn-home" type="button" aria-label="Ana sayfaya dön">
-        Akkim <span>İthalat ve İhracat Planı</span>
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect width="28" height="28" rx="8" fill="var(--color-accent)"/>
+          <rect x="7" y="7" width="6" height="6" rx="1.5" fill="white"/>
+          <rect x="15" y="7" width="6" height="6" rx="1.5" fill="white" opacity="0.6"/>
+          <rect x="7" y="15" width="6" height="6" rx="1.5" fill="white" opacity="0.6"/>
+          <rect x="15" y="15" width="6" height="6" rx="1.5" fill="white" opacity="0.3"/>
+        </svg>
       </button>
 
       <!-- Nav tabs (desktop) -->
@@ -54,21 +60,21 @@
             <rect x="2" y="2" width="12" height="12" rx="2"/>
             <path d="M5 1v2M11 1v2M2 6h12"/>
           </svg>
-          Randevu
+          <span>Randevu</span>
         </button>
         <button class="segment-control__btn" data-view="haftalik" type="button" aria-label="Haftalık Plan">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
             <rect x="2" y="2" width="12" height="12" rx="2"/>
             <path d="M2 6h12M6 2v12M10 2v12" opacity=".5"/>
           </svg>
-          Haftalık Plan
+          <span>Haftalık Plan</span>
         </button>
         <button class="segment-control__btn" data-view="teyit" type="button" aria-label="Günlük Teyit">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
             <path d="M13 4.5L6.5 11 3 7.5"/>
             <circle cx="8" cy="8" r="6"/>
           </svg>
-          Günlük Teyit
+          <span>Günlük Teyit</span>
         </button>
       </nav>
 
