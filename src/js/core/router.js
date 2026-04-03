@@ -127,8 +127,15 @@ export function initRouter() {
   const btnSwitch = document.getElementById('btn-switch-user');
   if (btnSwitch) {
     btnSwitch.addEventListener('click', () => {
-      // app.js'deki goToLauncher'ı tetikle
       emit('router:go-launcher', {});
+    });
+  }
+
+  // Header logo tıklama → program seçim ekranı
+  const btnHome = document.getElementById('btn-home');
+  if (btnHome) {
+    btnHome.addEventListener('click', () => {
+      emit('router:go-appselect', {});
     });
   }
 }

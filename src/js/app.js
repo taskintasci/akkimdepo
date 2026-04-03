@@ -8,7 +8,7 @@ import './core/storage.js';
 import { on }             from './core/events.js';
 import { initAuth, verifyPin, setAdminSession, getActiveUser } from './core/auth.js';
 import { initRouter, goToLauncher, goToApp }   from './core/router.js';
-import { initLauncher }   from './modules/launcher/launcher.js';
+import { initLauncher, goToAppSelect } from './modules/launcher/launcher.js';
 import { init as initRandevu } from './modules/randevu/randevu.js';
 import { init as initHaftalik } from './modules/haftalik/haftalik.js';
 import { init as initTeyit }    from './modules/teyit/teyit.js';
@@ -135,6 +135,11 @@ on('user:changed', _updateHeaderUser);
 on('router:go-launcher', () => {
   goToLauncher();
   initLauncher();
+});
+
+on('router:go-appselect', () => {
+  goToLauncher();
+  goToAppSelect();
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────────

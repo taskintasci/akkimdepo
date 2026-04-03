@@ -188,6 +188,20 @@
   line-height: var(--leading-snug);
 }
 
+/* ── Version Badge ────────────────────────────────────────────────────────── */
+.launcher__version {
+  position: fixed;
+  bottom: var(--space-3);
+  right: var(--space-4);
+  font-size: 11px;
+  font-family: var(--font-data);
+  font-weight: var(--weight-medium);
+  color: var(--color-subtle);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+}
+
 /* ── Admin Pin Trigger ────────────────────────────────────────────────────── */
 .launcher__admin-link {
   margin-top: var(--space-8);

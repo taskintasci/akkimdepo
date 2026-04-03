@@ -48,6 +48,7 @@ function _renderStep1() {
       </div>
 
       <p class="launcher__heading">Kim olarak giriş yapıyorsunuz?</p>
+      <span class="launcher__version">v4.0.1</span>
 
       <div class="user-grid stagger" id="user-grid">
         ${SPECIAL_USERS.map(u => _specialUserCardHTML(u)).join('')}
@@ -373,4 +374,12 @@ function _esc(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+export function goToAppSelect() {
+  if (_selectedUser) {
+    _renderStep2(_selectedUser);
+  } else {
+    _renderStep1();
+  }
 }
