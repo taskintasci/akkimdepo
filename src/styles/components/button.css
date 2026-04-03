@@ -181,3 +181,10 @@
   font-weight: var(--weight-semibold);
   box-shadow: var(--shadow-sm);
 }
+
+/* Dar ekran: sekme metinlerini gizle, sadece ikon */
+@media (max-width: 960px) {
+  .segment-control__btn span {
+    display: none;
+  }
+}
