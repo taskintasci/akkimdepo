@@ -500,17 +500,17 @@ function _entryModalHTML() {
                      placeholder="1" inputmode="numeric" autocomplete="off"/>
             </div>
             <div class="field">
-              <label class="field__label required" for="entry-desc">Açıklama</label>
+              <label class="field__label" for="entry-desc">Açıklama</label>
               <input class="field__input" type="text" id="entry-desc"
                      placeholder="Kısa açıklama..." autocomplete="off"/>
             </div>
             <div class="field">
-              <label class="field__label" for="entry-firma">Firma</label>
+              <label class="field__label required" for="entry-firma">Firma</label>
               <input class="field__input" type="text" id="entry-firma"
                      placeholder="Firma adı" autocomplete="off"/>
             </div>
             <div class="field">
-              <label class="field__label" for="entry-urun">Ürün</label>
+              <label class="field__label required" for="entry-urun">Ürün</label>
               <input class="field__input" type="text" id="entry-urun"
                      placeholder="Ürün / yük" autocomplete="off"/>
             </div>
@@ -632,7 +632,8 @@ function _closeModal() {
 
 function _saveEntry() {
   const count = ROOT.querySelector('#entry-count')?.value.trim();
-  const desc  = ROOT.querySelector('#entry-desc')?.value.trim();
+  const firma = ROOT.querySelector('#entry-firma')?.value.trim();
+  const urun  = ROOT.querySelector('#entry-urun')?.value.trim();
 
   let valid = true;
   if (!_selectedType) {
@@ -644,9 +645,14 @@ function _saveEntry() {
     if (valid) ROOT.querySelector('#entry-count')?.focus();
     valid = false;
   }
-  if (!desc) {
-    ROOT.querySelector('#entry-desc')?.classList.add('has-error');
-    if (valid) ROOT.querySelector('#entry-desc')?.focus();
+  if (!firma) {
+    ROOT.querySelector('#entry-firma')?.classList.add('has-error');
+    if (valid) ROOT.querySelector('#entry-firma')?.focus();
+    valid = false;
+  }
+  if (!urun) {
+    ROOT.querySelector('#entry-urun')?.classList.add('has-error');
+    if (valid) ROOT.querySelector('#entry-urun')?.focus();
     valid = false;
   }
   if (!valid) return;
@@ -658,9 +664,9 @@ function _saveEntry() {
 
   const entry = {
     count,
-    desc,
-    firma:     ROOT.querySelector('#entry-firma')?.value.trim() || '',
-    urun:      ROOT.querySelector('#entry-urun')?.value.trim()  || '',
+    desc:      ROOT.querySelector('#entry-desc')?.value.trim() || '',
+    firma,
+    urun,
     type:      _selectedType,
     pinned:    ROOT.querySelector('#entry-pin')?.checked || false,
     completed: false,

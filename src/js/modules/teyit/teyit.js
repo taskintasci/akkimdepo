@@ -533,17 +533,17 @@ function _modalHTML() {
                      placeholder="34 ABC 1234" autocomplete="off" maxlength="12"/>
             </div>
             <div class="field">
-              <label class="field__label" for="t-dorse">Treyler Plaka</label>
+              <label class="field__label required" for="t-dorse">Treyler Plaka</label>
               <input class="field__input field__input--mono" type="text" id="t-dorse"
                      placeholder="34 TT 9901" autocomplete="off"/>
             </div>
             <div class="field">
-              <label class="field__label" for="t-konteyner">Konteyner No</label>
+              <label class="field__label required" for="t-konteyner">Konteyner No</label>
               <input class="field__input field__input--mono" type="text" id="t-konteyner"
                      placeholder="PETU 123456-7" autocomplete="off"/>
             </div>
             <div class="field">
-              <label class="field__label" for="t-sofor">Sürücü Adı</label>
+              <label class="field__label required" for="t-sofor">Sürücü Adı</label>
               <input class="field__input" type="text" id="t-sofor"
                      placeholder="Ad Soyad" autocomplete="off"/>
             </div>
@@ -695,6 +695,26 @@ function _saveItem(doTeyit) {
     return;
   }
 
+  const dorse     = ROOT.querySelector('#t-dorse')?.value.trim();
+  const konteyner = ROOT.querySelector('#t-konteyner')?.value.trim();
+  const sofor     = ROOT.querySelector('#t-sofor')?.value.trim();
+
+  if (!dorse) {
+    ROOT.querySelector('#t-dorse')?.classList.add('has-error');
+    ROOT.querySelector('#t-dorse')?.focus();
+    return;
+  }
+  if (!konteyner) {
+    ROOT.querySelector('#t-konteyner')?.classList.add('has-error');
+    ROOT.querySelector('#t-konteyner')?.focus();
+    return;
+  }
+  if (!sofor) {
+    ROOT.querySelector('#t-sofor')?.classList.add('has-error');
+    ROOT.querySelector('#t-sofor')?.focus();
+    return;
+  }
+
   const firma  = ROOT.querySelector('#t-firma')?.value.trim();
   const urun   = ROOT.querySelector('#t-urun')?.value.trim();
   const miktar = ROOT.querySelector('#t-miktar')?.value.trim();
@@ -733,9 +753,9 @@ function _saveItem(doTeyit) {
   const entry = {
     id:          existing?.id || _uid(),
     plaka,
-    konteynerNo: ROOT.querySelector('#t-konteyner')?.value.trim() || '',
-    dorsePlaka:  ROOT.querySelector('#t-dorse')?.value.trim()     || '',
-    soforAdi:    ROOT.querySelector('#t-sofor')?.value.trim()     || '',
+    konteynerNo: konteyner,
+    dorsePlaka:  dorse,
+    soforAdi:    sofor,
     aracTipi:    _selectedType,
     firma,
     urun,
