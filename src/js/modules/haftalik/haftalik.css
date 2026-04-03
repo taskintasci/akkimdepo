@@ -47,8 +47,6 @@
 /* ── Table Wrapper ────────────────────────────────────────────────────────── */
 .haftalik-table-outer {
   flex: 1;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
   padding: var(--space-4) var(--space-6);
 }
 
@@ -234,6 +232,9 @@
               transform var(--duration-fast) var(--ease-out),
               opacity var(--duration-fast) var(--ease-out);
   position: relative;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .entry-chip:hover {
@@ -335,11 +336,49 @@
 
 .chip-count {
   font-family: var(--font-data);
-  font-size: var(--text-sm);
+  font-size: 1.1rem;
   font-weight: var(--weight-bold);
-  color: var(--color-text);
   line-height: 1;
 }
+
+/* ── Araç sayısına göre renk yoğunluğu ───────────────────────────────────── */
+/* IMO'lu (orange) */
+.entry-chip.imo.count-level-1 { background: var(--orange-50);  border-color: var(--orange-100); }
+.entry-chip.imo.count-level-2 { background: var(--orange-100); border-color: var(--orange-200); }
+.entry-chip.imo.count-level-3 { background: var(--orange-200); border-color: var(--orange-300); }
+.entry-chip.imo.count-level-4 { background: var(--orange-300); border-color: var(--orange-400); }
+.entry-chip.imo.count-level-5 { background: var(--orange-400); border-color: var(--orange-500); }
+
+/* IMO'suz (green) */
+.entry-chip.imosuz.count-level-1 { background: var(--green-50);  border-color: var(--green-100); }
+.entry-chip.imosuz.count-level-2 { background: var(--green-100); border-color: var(--green-200); }
+.entry-chip.imosuz.count-level-3 { background: var(--green-200); border-color: var(--green-300); }
+.entry-chip.imosuz.count-level-4 { background: var(--green-300); border-color: var(--green-400); }
+.entry-chip.imosuz.count-level-5 { background: var(--green-400); border-color: var(--green-500); }
+
+/* İthalat (violet) */
+.entry-chip.ithalat.count-level-1 { background: var(--violet-50);  border-color: var(--violet-100); }
+.entry-chip.ithalat.count-level-2 { background: var(--violet-100); border-color: var(--violet-200); }
+.entry-chip.ithalat.count-level-3 { background: var(--violet-200); border-color: var(--violet-300); }
+.entry-chip.ithalat.count-level-4 { background: var(--violet-300); border-color: var(--violet-400); }
+.entry-chip.ithalat.count-level-5 { background: var(--violet-400); border-color: var(--violet-500); }
+
+/* Diğer (gray) */
+.entry-chip.other.count-level-1 { background: var(--gray-50);  border-color: var(--gray-100); }
+.entry-chip.other.count-level-2 { background: var(--gray-100); border-color: var(--gray-200); }
+.entry-chip.other.count-level-3 { background: var(--gray-200); border-color: var(--gray-300); }
+.entry-chip.other.count-level-4 { background: var(--gray-300); border-color: var(--gray-400); }
+.entry-chip.other.count-level-5 { background: var(--gray-400); border-color: var(--gray-500); }
+
+/* Koyu tonlarda metin rengini koyulaştır */
+.entry-chip.count-level-4 .chip-count,
+.entry-chip.count-level-4 .chip-firma,
+.entry-chip.count-level-4 .chip-urun,
+.entry-chip.count-level-4 .chip-desc,
+.entry-chip.count-level-5 .chip-count,
+.entry-chip.count-level-5 .chip-firma,
+.entry-chip.count-level-5 .chip-urun,
+.entry-chip.count-level-5 .chip-desc { color: var(--gray-900); }
 
 .chip-firma {
   font-size: var(--text-xs);
@@ -348,6 +387,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 12ch;
 }
 
 .chip-urun {
@@ -356,11 +396,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 12ch;
 }
 
 .chip-desc {
   font-size: var(--text-xs);
   color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 12ch;
 }
 
 /* Flag icons */
@@ -660,6 +705,126 @@
   font-size: var(--text-sm);
   color: var(--color-muted);
   margin-bottom: var(--space-4);
+}
+
+
+/* ── Chip Tooltip ─────────────────────────────────────────────────────────── */
+.chip-tooltip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--gray-900, #1a202c);
+  color: #fff;
+  font-size: var(--text-xs);
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  white-space: pre-wrap;
+  max-width: 260px;
+  line-height: 1.4;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.chip-tooltip.visible {
+  opacity: 1;
+}
+
+/* ── Chip Preview Popup ────────────────────────────────────────────────────── */
+.chip-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip-preview {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-4) var(--space-5);
+  min-width: 220px;
+  max-width: 320px;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  position: relative;
+}
+
+.chip-preview__close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.chip-preview__close:hover {
+  background: var(--gray-100);
+  color: var(--color-text);
+}
+
+.chip-preview__type {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.chip-preview__count {
+  font-family: var(--font-data);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.chip-preview__firma {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.chip-preview__urun {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.chip-preview__desc {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.chip-preview__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: var(--text-xs);
+}
+
+.chip-preview__edit-btn {
+  width: 100%;
+  margin-top: var(--space-2);
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */

@@ -240,17 +240,18 @@ function _entryChipHTML(e, personId, dayIdx, entryIdx, canEdit) {
     ? `<button class="chip-del" data-del-person="${personId}" data-del-day="${dayIdx}" data-del-idx="${entryIdx}" type="button" aria-label="Sil">✕</button>`
     : '';
 
+  const cnt = parseInt(e.count) || 0;
+  const countLevel = cnt <= 1 ? 1 : cnt <= 3 ? 2 : cnt <= 5 ? 3 : cnt <= 8 ? 4 : 5;
+  const previewData = JSON.stringify({ count: e.count, firma: e.firma, urun: e.urun, desc: e.desc, type: e.type, pinned: e.pinned, labels: e.labels });
+
   return `
-    <div class="entry-chip ${typeClass}${completed}${pinned}" ${dragAttr} ${editAttr}>
-      <div class="chip-top-bar">
-        ${e.pinned ? `<span class="chip-cutoff">Cut-Off</span>` : '<span></span>'}
-        ${delBtn}
-      </div>
-      ${e.count ? `<div class="chip-count">${_esc(e.count)} araç</div>` : ''}
+    <div class="entry-chip ${typeClass}${completed}${pinned} count-level-${countLevel}" ${dragAttr} ${editAttr} data-preview='${previewData.replace(/'/g, '&#39;')}'>
+      ${(e.pinned || delBtn) ? `<div class="chip-top-bar">${e.pinned ? `<span class="chip-cutoff">Cut-Off</span>` : '<span></span>'}${delBtn}</div>` : ''}
+      ${e.count ? `<div class="chip-count">${_esc(e.count)}</div>` : ''}
       <div>
         ${e.firma ? `<div class="chip-firma">${_esc(e.firma)}</div>` : ''}
         ${e.urun  ? `<div class="chip-urun">${_esc(e.urun)}</div>`   : ''}
-        ${e.desc  ? `<div class="chip-desc">${_esc(e.desc)}</div>`   : ''}
+        ${e.desc  ? `<div class="chip-desc" title="${_esc(e.desc)}">${_esc(e.desc)}</div>` : ''}
       </div>
       ${flags ? `<div class="chip-flags">${flags}</div>` : ''}
     </div>
@@ -309,12 +310,15 @@ function _bindTableEvents() {
     });
   });
 
-  // Düzenle (çift tıklama veya tek tıklama edit attr'li chip)
+  // Düzenle (çift tıklama)
   ROOT.querySelectorAll('[data-edit-person]').forEach(el => {
     el.addEventListener('dblclick', () => {
       _openModal(el.dataset.editPerson, parseInt(el.dataset.editDay), parseInt(el.dataset.editIdx));
     });
   });
+
+  // Tooltip
+  _initChipTooltips();
 
   // Sil butonu
   ROOT.querySelectorAll('[data-del-person]').forEach(btn => {
@@ -748,6 +752,114 @@ function _bindModalFooter() {
   ROOT.querySelector('#btn-entry-save')?.addEventListener('click', _saveEntry);
   ROOT.querySelector('#btn-entry-complete')?.addEventListener('click', _toggleComplete);
   ROOT.querySelector('#btn-entry-activate')?.addEventListener('click', _toggleComplete);
+}
+
+// ── Chip Tooltip ──────────────────────────────────────────────────────────────
+
+let _tooltip = null;
+
+function _initChipTooltips() {
+  if (!ROOT) return;
+  if (window.matchMedia('(hover: none)').matches) return; // touch cihazlarda tooltip yok
+  if (!_tooltip) {
+    _tooltip = document.createElement('div');
+    _tooltip.className = 'chip-tooltip';
+    document.body.appendChild(_tooltip);
+  }
+
+  ROOT.querySelectorAll('.chip-desc[title]').forEach(el => {
+    el.addEventListener('mouseenter', (e) => {
+      const text = el.getAttribute('title');
+      if (!text) return;
+      _tooltip.textContent = text;
+      _tooltip.classList.add('visible');
+      _positionTooltip(e);
+    });
+    el.addEventListener('mousemove', _positionTooltip);
+    el.addEventListener('mouseleave', () => {
+      _tooltip.classList.remove('visible');
+    });
+  });
+}
+
+function _positionTooltip(e) {
+  if (!_tooltip) return;
+  const pad = 10;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  const tw = _tooltip.offsetWidth;
+  const th = _tooltip.offsetHeight;
+  if (x + tw > window.innerWidth - pad) x = e.clientX - tw - pad;
+  if (y + th > window.innerHeight - pad) y = e.clientY - th - pad;
+  _tooltip.style.left = x + 'px';
+  _tooltip.style.top  = y + 'px';
+}
+
+// ── Chip Preview Popup ────────────────────────────────────────────────────────
+
+let _previewEl = null;
+
+const TYPE_LABELS = { imo: 'IMO\'lu', imosuz: 'IMO\'suz', ithalat: 'İthalat', other: 'Diğer' };
+const LABEL_NAMES = { ozel: '🏷️ Özel Etiket', lashing: '⛓️ Lashing', karton: '📦 Karton', jel: '💧 Nem Çekici' };
+
+function _openChipPreview(chipEl) {
+  _closeChipPreview();
+  let data;
+  try { data = JSON.parse(chipEl.dataset.preview); } catch { return; }
+
+  const canEdit = !!chipEl.dataset.editPerson;
+
+  const flags = Object.entries(data.labels || {})
+    .filter(([, v]) => v)
+    .map(([k]) => `<span>${LABEL_NAMES[k] || k}</span>`)
+    .join('');
+
+  const pinTag = data.pinned ? '<span>📌 Cut-Off</span>' : '';
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'chip-preview-backdrop';
+  backdrop.innerHTML = `
+    <div class="chip-preview">
+      <button class="chip-preview__close" type="button" aria-label="Kapat">✕</button>
+      ${data.type ? `<div class="chip-preview__type">${TYPE_LABELS[data.type] || data.type}</div>` : ''}
+      ${data.count ? `<div class="chip-preview__count">${data.count} araç</div>` : ''}
+      ${data.firma ? `<div class="chip-preview__firma">${data.firma}</div>` : ''}
+      ${data.urun  ? `<div class="chip-preview__urun">${data.urun}</div>` : ''}
+      ${data.desc  ? `<div class="chip-preview__desc">${data.desc}</div>` : ''}
+      ${(flags || pinTag) ? `<div class="chip-preview__flags">${pinTag}${flags}</div>` : ''}
+      ${canEdit ? `<button class="btn btn--secondary btn--sm chip-preview__edit-btn" type="button">Düzenle</button>` : ''}
+    </div>
+  `;
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop || e.target.classList.contains('chip-preview__close')) {
+      _closeChipPreview();
+    }
+    if (e.target.classList.contains('chip-preview__edit-btn')) {
+      _closeChipPreview();
+      _openModal(
+        chipEl.dataset.editPerson,
+        parseInt(chipEl.dataset.editDay),
+        parseInt(chipEl.dataset.editIdx)
+      );
+    }
+  });
+
+  document.addEventListener('keydown', _onPreviewKey);
+  document.body.appendChild(backdrop);
+  _previewEl = backdrop;
+}
+
+function _closeChipPreview() {
+  if (_previewEl) {
+    _previewEl.remove();
+    _previewEl = null;
+    document.removeEventListener('keydown', _onPreviewKey);
+  }
+}
+
+function _onPreviewKey(e) {
+  if (e.key === 'Escape') _closeChipPreview();
 }
 
 // ── Monthly Modal ─────────────────────────────────────────────────────────────
