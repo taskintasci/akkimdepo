@@ -73,15 +73,17 @@ function _render() {
   ROOT.innerHTML = `
     <div class="haftalik-page animate-fade-in">
       <div class="haftalik-toolbar">
-        <button class="btn btn--ghost btn--icon" id="btn-week-prev" type="button" aria-label="Önceki hafta">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4l-4 4 4 4"/></svg>
-        </button>
-        <span class="toolbar-week-badge">${parseInt(_currentWeek.split('-W')[1], 10)}</span>
-        <div class="haftalik-toolbar__week" id="week-label">${formatWeekTitle(_currentWeek)}</div>
-        <button class="btn btn--ghost btn--icon" id="btn-week-next" type="button" aria-label="Sonraki hafta">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4l4 4-4 4"/></svg>
-        </button>
-        <button class="btn btn--ghost btn--sm" id="btn-today" type="button">Bugün</button>
+        <div class="haftalik-toolbar__nav">
+          <button class="btn btn--ghost btn--icon" id="btn-week-prev" type="button" aria-label="Önceki hafta">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 4l-4 4 4 4"/></svg>
+          </button>
+          <span class="toolbar-week-badge">${parseInt(_currentWeek.split('-W')[1], 10)}</span>
+          <div class="haftalik-toolbar__week" id="week-label">${formatWeekTitle(_currentWeek)}</div>
+          <button class="btn btn--ghost btn--icon" id="btn-week-next" type="button" aria-label="Sonraki hafta">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 4l4 4-4 4"/></svg>
+          </button>
+          <button class="btn btn--ghost btn--sm" id="btn-today" type="button">Bugün</button>
+        </div>
         <div style="flex:1"></div>
         <button class="btn btn--secondary btn--sm" id="btn-monthly" type="button">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 7h12M6 2v2M10 2v2"/></svg>

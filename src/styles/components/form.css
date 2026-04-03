@@ -114,6 +114,12 @@
   .form-grid {
     grid-template-columns: 1fr;
   }
+
+  .field__input,
+  .field__select,
+  .field__textarea {
+    font-size: 1rem; /* 16px — iOS auto-zoom önler */
+  }
 }
 
 /* ── Toggle Switch ────────────────────────────────────────────────────────── */

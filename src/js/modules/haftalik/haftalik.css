@@ -19,13 +19,18 @@
   flex-shrink: 0;
 }
 
+.haftalik-toolbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .haftalik-toolbar__week {
   font-size: var(--text-md);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
   letter-spacing: -0.02em;
-  flex: 1;
-  min-width: 200px;
+  min-width: 160px;
 }
 
 /* ── Toolbar Hafta Numarası Rozeti ────────────────────────────────────────── */
@@ -409,7 +414,7 @@
   cursor: pointer;
   border: 1px dashed var(--gray-200);
   background: none;
-  opacity: 0;
+  opacity: 0.4;
   transition: opacity var(--duration-fast) var(--ease-out),
               border-color var(--duration-fast) var(--ease-out),
               color var(--duration-fast) var(--ease-out);
