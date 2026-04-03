@@ -1,0 +1,34 @@
+/**
+ * Firebase configuration — Akkim İthalat ve İhracat Planı
+ *
+ * Firebase console'dan yeni proje oluşturduktan sonra bu config'i güncelleyin:
+ * https://console.firebase.google.com/
+ *
+ * Güncellenecek alanlar: apiKey, authDomain, projectId, storageBucket,
+ *                        messagingSenderId, appId
+ */
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyDbGW1xiyRpxQmLIWLYQ3t7Ppq9tHKe9Ec",
+  authDomain:        "akkim-plan.firebaseapp.com",
+  projectId:         "akkim-plan",
+  storageBucket:     "akkim-plan.firebasestorage.app",
+  messagingSenderId: "751503194833",
+  appId:             "1:751503194833:web:36de9c671732407ecd63f0",
+};
+
+// Firebase compat SDK (global firebase objesi)
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+export const db = firebase.firestore();
+
+// Firestore cache (offline persistence) — yeni API
+try {
+  firebase.firestore().settings({
+    cache: { kind: 'persistent', tabManager: { kind: 'multiTab' } },
+  });
+} catch {
+  // settings() yalnızca ilk çağrıda çalışır; sonraki sekmelerde sessizce geç
+}

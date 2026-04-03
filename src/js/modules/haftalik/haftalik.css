@@ -1,0 +1,669 @@
+/* ─── Haftalık Plan Module ────────────────────────────────────────────────── */
+
+/* ── Page Layout ──────────────────────────────────────────────────────────── */
+.haftalik-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.haftalik-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.haftalik-toolbar__week {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ── Toolbar Hafta Numarası Rozeti ────────────────────────────────────────── */
+.toolbar-week-badge {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  min-width: 2.2rem;
+  text-align: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Table Wrapper ────────────────────────────────────────────────────────── */
+.haftalik-table-outer {
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--space-4) var(--space-6);
+}
+
+.haftalik-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Table Header ─────────────────────────────────────────────────────────── */
+.haftalik-table thead {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.haftalik-table th {
+  background: var(--gray-100);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+  text-align: center;
+}
+
+.haftalik-table th:first-child {
+  text-align: left;
+  width: 150px;
+  min-width: 150px;
+  background: var(--gray-100);
+}
+
+.th-holiday {
+  background: var(--amber-50) !important;
+  color: var(--amber-500) !important;
+}
+
+.day-header-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.day-header-cell__name {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.day-header-cell__num {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.day-header-cell__num.is-today {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.day-header-cell__holiday {
+  font-size: 10px;
+  color: var(--amber-500);
+  font-weight: var(--weight-medium);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ── Table Body ───────────────────────────────────────────────────────────── */
+.haftalik-table tbody tr {
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.haftalik-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.haftalik-table tbody td:not(.name-cell) {
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.haftalik-table tbody td:not(.name-cell):hover {
+  background: var(--gray-100);
+}
+
+.haftalik-table td {
+  vertical-align: top;
+  border-right: 1px solid var(--gray-200);
+  padding: var(--space-2) var(--space-2);
+  min-height: 52px;
+}
+
+.haftalik-table td:last-child {
+  border-right: none;
+}
+
+/* ── Person Name Cell ─────────────────────────────────────────────────────── */
+.name-cell {
+  background: var(--color-surface);
+  position: sticky;
+  left: 0;
+  z-index: var(--z-raised);
+  border-right: 1px solid var(--color-border) !important;
+  padding: var(--space-3) var(--space-4) !important;
+}
+
+.name-cell__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.name-cell__text {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.name-cell__role {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Day Cell ─────────────────────────────────────────────────────────────── */
+.day-cell {
+  min-width: 120px;
+  vertical-align: top;
+}
+
+.day-cell.col-today {
+  background: rgba(99,102,241,0.02);
+}
+
+.day-cell.col-holiday {
+  background: var(--amber-50);
+}
+
+.day-cell.drag-over {
+  background: var(--color-accent-bg) !important;
+  outline: 2px dashed var(--indigo-300);
+  outline-offset: -2px;
+}
+
+.day-cell__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 48px;
+  padding: var(--space-1);
+}
+
+/* ── Entry Chip (haftalık plan satır girişi) ─────────────────────────────── */
+.entry-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out),
+              opacity var(--duration-fast) var(--ease-out);
+  position: relative;
+}
+
+.entry-chip:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.entry-chip:active {
+  transform: scale(0.97);
+}
+
+.entry-chip.is-dragging {
+  opacity: 0.3;
+}
+
+/* IMO'lu */
+.entry-chip.imo {
+  background: var(--color-imo-bg);
+  border-color: var(--color-imo-border);
+}
+
+/* IMO'suz */
+.entry-chip.imosuz {
+  background: var(--color-normal-bg);
+  border-color: var(--color-normal-border);
+}
+
+/* İthalat */
+.entry-chip.ithalat {
+  background: var(--color-ithalat-bg);
+  border-color: var(--color-ithalat-border);
+}
+
+/* Diğer */
+.entry-chip.other {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+}
+
+/* Tamamlandı */
+.entry-chip.is-completed {
+  opacity: 0.5;
+}
+
+.entry-chip.is-completed .chip-count {
+  text-decoration: line-through;
+}
+
+/* Cut-off */
+.entry-chip.is-pinned {
+  outline: 1.5px dashed var(--color-imo);
+}
+
+/* ── Chip Parts ───────────────────────────────────────────────────────────── */
+.chip-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+  min-height: 16px;
+}
+
+.chip-cutoff {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-imo);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chip-del {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--color-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.entry-chip:hover .chip-del {
+  opacity: 1;
+}
+
+.chip-del:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.chip-count {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.chip-firma {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-urun {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-desc {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+/* Flag icons */
+.chip-flags {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+.chip-flag-icon {
+  font-size: 12px;
+  line-height: 1;
+  cursor: default;
+  position: relative;
+}
+
+.chip-flag-icon[title]::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gray-900);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 10px;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  z-index: var(--z-toast);
+}
+
+.chip-flag-icon[title]:hover::after {
+  opacity: 1;
+}
+
+/* ── Add entry button ─────────────────────────────────────────────────────── */
+.add-entry-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-subtle);
+  cursor: pointer;
+  border: 1px dashed var(--gray-200);
+  background: none;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.day-cell__inner:hover .add-entry-btn {
+  opacity: 1;
+}
+
+.add-entry-btn:hover {
+  border-color: var(--indigo-300);
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+}
+
+/* ── Total Row ────────────────────────────────────────────────────────────── */
+.haftalik-table .total-row td {
+  background: var(--gray-100);
+  border-top: 2px solid var(--color-border);
+  padding: var(--space-3) var(--space-2);
+}
+
+.total-row .name-cell {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.total-num {
+  font-family: var(--font-data);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.total-num.warn { color: var(--amber-500); }
+.total-num.over { color: var(--color-danger); }
+
+.total-lbl {
+  font-size: 10px;
+  color: var(--color-muted);
+  text-align: center;
+  margin-top: 1px;
+}
+
+/* ── Notes Row ────────────────────────────────────────────────────────────── */
+.notes-row {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.notes-label {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--gray-50);
+  display: flex;
+  align-items: center;
+}
+
+.notes-cell {
+  border-left: 1px solid var(--color-border);
+  padding: var(--space-2);
+}
+
+.notes-cell textarea {
+  width: 100%;
+  border: none;
+  background: none;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  resize: none;
+  outline: none;
+  line-height: var(--leading-relaxed);
+}
+
+.notes-cell textarea:focus {
+  background: var(--color-surface);
+  border-radius: var(--radius-xs);
+}
+
+/* ── Entry Modal ──────────────────────────────────────────────────────────── */
+.entry-modal-sub {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Type selector */
+.type-selector {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.type-opt {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  transition: all var(--duration-fast) var(--ease-out);
+  user-select: none;
+}
+
+.type-opt.type-error {
+  border-color: var(--color-danger);
+  animation: shake 0.4s var(--ease-out);
+}
+
+.type-opt.sel-imo {
+  background: var(--color-imo-bg);
+  border-color: var(--color-imo-border);
+  color: var(--color-imo);
+}
+
+.type-opt.sel-imosuz {
+  background: var(--color-normal-bg);
+  border-color: var(--color-normal-border);
+  color: var(--color-normal);
+}
+
+.type-opt.sel-ithalat {
+  background: var(--color-ithalat-bg);
+  border-color: var(--color-ithalat-border);
+  color: var(--color-ithalat);
+}
+
+.type-opt.sel-other {
+  background: var(--gray-100);
+  border-color: var(--gray-300);
+  color: var(--gray-700);
+}
+
+/* ── Monthly Modal ────────────────────────────────────────────────────────── */
+.monthly-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.monthly-table th {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: right;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.monthly-table th:first-child { text-align: left; }
+
+.monthly-table td {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--gray-100);
+  text-align: right;
+  font-family: var(--font-data);
+}
+
+.monthly-table td:first-child {
+  text-align: left;
+  font-family: var(--font-ui);
+  font-weight: var(--weight-medium);
+}
+
+.monthly-table .zero {
+  color: var(--color-subtle);
+}
+
+.monthly-table .m-imo    { color: var(--color-imo); }
+.monthly-table .m-imosuz { color: var(--color-normal); }
+.monthly-table .m-ithalat{ color: var(--color-ithalat); }
+
+.monthly-table tbody tr:last-child td {
+  border-bottom: none;
+  font-weight: var(--weight-bold);
+  background: var(--gray-50);
+}
+
+/* ── Admin Panel ──────────────────────────────────────────────────────────── */
+.person-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.person-item:last-child { border-bottom: none; }
+.person-item:hover { background: var(--gray-50); }
+
+.person-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.person-name-disp {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.person-role-disp {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.person-mail-disp {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  font-family: var(--font-data);
+}
+
+.person-edit-inputs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* ── Sync Toast Modal ─────────────────────────────────────────────────────── */
+.sync-modal-sub {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .haftalik-toolbar {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .haftalik-table-outer {
+    padding: var(--space-3) var(--space-4);
+  }
+}

@@ -1,0 +1,155 @@
+/* ─── Modal Component ─────────────────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.4);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.modal-backdrop.is-open {
+  opacity: 1;
+}
+
+.modal {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 480px;
+  max-height: calc(100vh - var(--space-8));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.94) translateY(8px);
+  opacity: 0;
+  transition: transform var(--duration-normal) var(--ease-bounce),
+              opacity var(--duration-normal) var(--ease-out);
+}
+
+.modal-backdrop.is-open .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal--wide {
+  max-width: 680px;
+}
+
+.modal--narrow {
+  max-width: 360px;
+}
+
+/* ── Modal Sections ───────────────────────────────────────────────────────── */
+.modal__header {
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.modal__title {
+  flex: 1;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+}
+
+.modal__close:hover {
+  background: var(--gray-100);
+  color: var(--color-text);
+}
+
+.modal__body {
+  padding: var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal__footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+/* ── Sheet Modal (mobile bottom sheet) ───────────────────────────────────── */
+@media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal--sheet,
+  .modal-backdrop .modal {
+    max-width: 100%;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    max-height: 92vh;
+    transform: translateY(100%);
+  }
+
+  .modal-backdrop.is-open .modal--sheet,
+  .modal-backdrop.is-open .modal {
+    transform: translateY(0);
+  }
+
+  /* Drag handle */
+  .modal__header::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: var(--space-2);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    background: var(--gray-300);
+  }
+
+  .modal__header {
+    position: relative;
+    padding-top: var(--space-6);
+  }
+}
+
+/* ── Confirm Dialog ───────────────────────────────────────────────────────── */
+.confirm-dialog {
+  z-index: var(--z-confirm);
+}
+
+.confirm-dialog .modal {
+  max-width: 380px;
+}

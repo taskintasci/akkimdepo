@@ -1,0 +1,538 @@
+/* ─── Teyit Module ────────────────────────────────────────────────────────── */
+
+/* ── Page Layout ──────────────────────────────────────────────────────────── */
+.teyit-page {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--header-h));
+}
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.teyit-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.teyit-date-label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.teyit-toolbar__spacer { flex: 1; }
+
+.teyit-toolbar .toolbar-week-badge {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  min-width: 2.2rem;
+  text-align: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Stat Chips (header altı) ─────────────────────────────────────────────── */
+.teyit-stats {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.teyit-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  border: 1px solid transparent;
+}
+
+.teyit-stat--total    { background: var(--gray-100); color: var(--gray-600); border-color: var(--gray-200); }
+.teyit-stat--pending  { background: var(--amber-50);  color: var(--amber-500); border-color: var(--amber-200); }
+.teyit-stat--confirmed{ background: var(--color-accent-bg); color: var(--color-accent); border-color: var(--indigo-200); }
+.teyit-stat--wms      { background: var(--color-normal-bg); color: var(--color-normal); border-color: var(--color-normal-border); }
+
+/* ── Calendar popup ───────────────────────────────────────────────────────── */
+.teyit-cal-wrap {
+  position: relative;
+}
+
+.teyit-cal-popup {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  z-index: var(--z-overlay);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 280px;
+  display: none;
+}
+
+.teyit-cal-popup.is-open {
+  display: block;
+  animation: scaleIn var(--duration-normal) var(--ease-bounce) both;
+  transform-origin: top left;
+}
+
+.teyit-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.teyit-cal-title {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.teyit-cal-grid {
+  display: grid;
+  grid-template-columns: auto repeat(7, 1fr);
+  gap: 2px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+
+.teyit-cal-cell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+.teyit-cal-cell.header-cell {
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  cursor: default;
+  font-size: 10px;
+}
+
+.teyit-cal-cell.empty { cursor: default; }
+
+.teyit-cal-cell.wk-label {
+  font-size: 9px;
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  cursor: default;
+  border-radius: 0;
+  width: 22px;
+}
+
+.teyit-cal-cell.wk-num {
+  font-size: 9px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  cursor: default;
+  border-radius: 0;
+  width: 22px;
+  opacity: 0.7;
+}
+
+.teyit-cal-cell:not(.header-cell):not(.empty):hover {
+  background: var(--gray-100);
+}
+
+.teyit-cal-cell.today {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+}
+
+.teyit-cal-cell.selected {
+  background: var(--color-accent) !important;
+  color: #fff !important;
+  font-weight: var(--weight-bold);
+}
+
+/* ── List Content ─────────────────────────────────────────────────────────── */
+.teyit-list {
+  flex: 1;
+  padding: var(--space-4) var(--space-6);
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* ── Empty State ──────────────────────────────────────────────────────────── */
+.teyit-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.teyit-empty__icon {
+  font-size: 40px;
+  opacity: 0.3;
+}
+
+/* ── Section Divider ──────────────────────────────────────────────────────── */
+.teyit-section-div {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 var(--space-2);
+}
+
+.teyit-section-div__label {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.teyit-section-div__line {
+  flex: 1;
+  height: 1px;
+}
+
+.teyit-section-div__count {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-subtle);
+  white-space: nowrap;
+}
+
+.teyit-section-div.pending .teyit-section-div__label { color: var(--amber-500); }
+.teyit-section-div.pending .teyit-section-div__line  { background: var(--amber-200); }
+
+.teyit-section-div.confirmed .teyit-section-div__label { color: var(--color-accent); }
+.teyit-section-div.confirmed .teyit-section-div__line  { background: var(--indigo-200); }
+
+.teyit-section-div.processed .teyit-section-div__label { color: var(--color-normal); }
+.teyit-section-div.processed .teyit-section-div__line  { background: var(--green-200); }
+
+/* ── Vehicle Card ─────────────────────────────────────────────────────────── */
+.vehicle-card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+  align-items: flex-start;
+}
+
+.vehicle-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.vehicle-card.is-pending {
+  border-color: var(--amber-200);
+  background: var(--amber-50);
+}
+
+.vehicle-card.is-confirmed {
+  border-color: var(--indigo-200);
+  background: var(--indigo-50);
+}
+
+.vehicle-card.is-processed {
+  border-color: var(--color-normal-border);
+  background: var(--color-normal-bg);
+  opacity: 0.8;
+}
+
+/* Status dot */
+.vehicle-card__status {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: var(--weight-bold);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.vehicle-card__status.pending   { background: var(--amber-100); color: var(--amber-500); }
+.vehicle-card__status.confirmed { background: var(--indigo-100); color: var(--color-accent); }
+.vehicle-card__status.processed { background: var(--green-100); color: var(--color-normal); }
+
+/* Card body */
+.vehicle-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+/* Title row — plaka + tip tag */
+.vehicle-card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.vehicle-plaka {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  letter-spacing: 0.05em;
+}
+
+.vehicle-detail--inline {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.vehicle-detail--inline strong {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}
+
+.vehicle-card__flags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+}
+
+/* Detail row — mono font, icon+text */
+.vehicle-card__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.vehicle-detail {
+  font-family: var(--font-data);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.vehicle-detail strong {
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}
+
+/* Meta (creator, teyit eden) */
+.vehicle-card__meta {
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+  margin-top: 2px;
+  line-height: var(--leading-relaxed);
+}
+
+/* ── Card Actions ─────────────────────────────────────────────────────────── */
+.vehicle-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.teyit-waiting-badge {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--amber-500);
+  background: var(--amber-50);
+  border: 1px solid var(--amber-200);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+/* ── WMS Slot Picker ──────────────────────────────────────────────────────── */
+.wms-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.wms-slot-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+  font-family: var(--font-ui);
+  text-align: left;
+  width: 100%;
+}
+
+.wms-slot-btn:hover {
+  border-color: var(--indigo-300);
+  background: var(--color-accent-bg);
+}
+
+.wms-slot-time {
+  font-family: var(--font-data);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.wms-slot-type {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+.wms-slot-btn[data-slot-type="adr"]    .wms-slot-type { background: var(--color-imo-bg); color: var(--color-imo); }
+.wms-slot-btn[data-slot-type="normal"] .wms-slot-type { background: var(--color-normal-bg); color: var(--color-normal); }
+
+/* ── Araç Tipi selector ───────────────────────────────────────────────────── */
+.arac-tipi-row {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.arac-tipi-btn {
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  transition: all var(--duration-fast) var(--ease-out);
+  user-select: none;
+}
+
+.arac-tipi-btn:hover {
+  border-color: var(--indigo-300);
+  color: var(--color-text);
+}
+
+.arac-tipi-btn.is-active.imo {
+  background: var(--color-imo-bg);
+  border-color: var(--color-imo-border);
+  color: var(--color-imo);
+}
+
+.arac-tipi-btn.is-active.imosuz {
+  background: var(--color-normal-bg);
+  border-color: var(--color-normal-border);
+  color: var(--color-normal);
+}
+
+/* ── Haftalık çek button ──────────────────────────────────────────────────── */
+.btn-haftalik-cek {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+  border: 1px solid var(--indigo-200);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.btn-haftalik-cek:hover {
+  background: var(--indigo-100);
+  border-color: var(--indigo-300);
+}
+
+.btn-haftalik-cek.is-done {
+  background: var(--color-normal-bg);
+  border-color: var(--color-normal-border);
+  color: var(--color-normal);
+}
+
+/* ── Haftalık seçim listesi ───────────────────────────────────────────────── */
+.haftalik-cek-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.haftalik-cek-item {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.haftalik-cek-item:hover {
+  background: var(--color-accent-bg);
+  border-color: var(--indigo-200);
+  color: var(--color-accent);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .teyit-toolbar,
+  .teyit-stats {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .teyit-list {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .vehicle-card__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
