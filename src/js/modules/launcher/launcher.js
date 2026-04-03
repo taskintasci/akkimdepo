@@ -7,7 +7,7 @@
  */
 
 import { loadPersons, savePersons }                            from '../../core/storage.js';
-import { on }                                                   from '../../core/events.js';
+import { on, emit }                                             from '../../core/events.js';
 import { setActiveUser, normalizeRole,
          verifyPin, setAdminSession, clearUser }                from '../../core/auth.js';
 import { goToApp }                                              from '../../core/router.js';
@@ -44,11 +44,10 @@ function _renderStep1() {
   ROOT.innerHTML = `
     <div class="launcher animate-fade-in">
       <div class="launcher__brand">
-        <div class="launcher__logo">Akkim İthalat ve İhracat <span>Planı</span></div>
+        <div class="launcher__logo"><span class="launcher__logo-akkim">Akkim</span><span class="launcher__logo-sub">İthalat ve İhracat Planı</span></div>
       </div>
 
-      <p class="launcher__heading">Kim olarak giriş yapıyorsunuz?</p>
-      <span class="launcher__version">v4.0.1</span>
+<span class="launcher__version">v4.0.1</span>
 
       <div class="user-grid stagger" id="user-grid">
         ${SPECIAL_USERS.map(u => _specialUserCardHTML(u)).join('')}
@@ -95,7 +94,7 @@ function _showPinDialog(adminUser) {
   ROOT.innerHTML = `
     <div class="launcher animate-fade-in">
       <div class="launcher__brand">
-        <div class="launcher__logo">Akkim İthalat ve İhracat <span>Planı</span></div>
+        <div class="launcher__logo"><span class="launcher__logo-akkim">Akkim</span><span class="launcher__logo-sub">İthalat ve İhracat Planı</span></div>
       </div>
       <div style="max-width:320px;margin:0 auto;text-align:center;">
         <div style="width:56px;height:56px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;margin:0 auto var(--space-4);">AD</div>
@@ -151,24 +150,15 @@ function _renderStep2(user) {
   ROOT.innerHTML = `
     <div class="launcher animate-fade-in">
       <div class="launcher__brand">
-        <div class="launcher__logo">Akkim İthalat ve İhracat <span>Planı</span></div>
+        <div class="launcher__logo"><span class="launcher__logo-akkim">Akkim</span><span class="launcher__logo-sub">İthalat ve İhracat Planı</span></div>
       </div>
 
-      <div class="launcher__back">
+      <button class="launcher__back" id="btn-back-users" type="button" aria-label="Kullanıcı seçimine dön">
         <span class="avatar" data-color="${getAvatarColor(user.name)}" aria-hidden="true">
           ${getInitials(user.name)}
         </span>
-        <div>
-          <div style="font-weight:var(--weight-semibold);font-size:var(--text-md);">${_esc(user.name)}</div>
-          <div style="font-size:var(--text-xs);color:var(--color-muted);">Hangi uygulamayı açmak istiyorsunuz?</div>
-        </div>
-        <button class="btn btn--ghost btn--sm" id="btn-back-users" type="button" aria-label="Kullanıcı seçimine dön" style="margin-left:auto;">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M10 4l-4 4 4 4"/>
-          </svg>
-          Değiştir
-        </button>
-      </div>
+        <div style="font-weight:var(--weight-semibold);font-size:var(--text-md);">${_esc(user.name)}</div>
+      </button>
 
       <div class="app-grid stagger">
         ${_appCardHTML('randevu', 'Randevu', 'Araç slot planlaması',
@@ -177,6 +167,13 @@ function _renderStep2(user) {
           `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18M3 15h18" opacity=".5"/></svg>`)}
         ${_appCardHTML('teyit', 'Günlük Teyit', 'Araç teyit takibi',
           `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M20 6.5L9 17.5l-5-5"/><circle cx="12" cy="12" r="9" opacity=".25"/></svg>`)}
+      </div>
+
+      <div class="launcher__actions">
+        <button class="btn btn--secondary btn--sm" id="btn-launcher-monthly" type="button">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 7h12M6 2v2M10 2v2"/></svg>
+          Aylık Özet
+        </button>
       </div>
 
       ${isAdmin ? `
@@ -191,6 +188,11 @@ function _renderStep2(user) {
   ROOT.querySelector('#btn-back-users')?.addEventListener('click', () => {
     _selectedUser = null;
     _renderStep1();
+  });
+
+
+  ROOT.querySelector('#btn-launcher-monthly')?.addEventListener('click', () => {
+    emit('haftalik:open-monthly', {});
   });
 
   ROOT.querySelectorAll('.app-card').forEach(card => {
@@ -223,7 +225,7 @@ function _renderPersonelStep(user) {
   ROOT.innerHTML = `
     <div class="launcher animate-fade-in" style="align-items:stretch;max-width:480px;width:100%;margin:0 auto;">
       <div class="launcher__brand">
-        <div class="launcher__logo">Akkim İthalat ve İhracat <span>Planı</span></div>
+        <div class="launcher__logo"><span class="launcher__logo-akkim">Akkim</span><span class="launcher__logo-sub">İthalat ve İhracat Planı</span></div>
       </div>
 
       <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6);">

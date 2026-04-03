@@ -46,6 +46,7 @@ export async function init() {
 
   on('auth:changed', _render);
   on('user:changed', _render);
+  on('haftalik:open-monthly', () => setTimeout(_openMonthly, 50));
 
   // Haftalık veriyi yükle ve izle
   _watchWeek(_currentWeek);
@@ -84,11 +85,6 @@ function _render() {
           </button>
           <button class="btn btn--ghost btn--sm" id="btn-today" type="button">Bugün</button>
         </div>
-        <div style="flex:1"></div>
-        <button class="btn btn--secondary btn--sm" id="btn-monthly" type="button">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 7h12M6 2v2M10 2v2"/></svg>
-          Aylık Özet
-        </button>
       </div>
 
       <div class="haftalik-table-outer">
@@ -251,7 +247,7 @@ function _entryChipHTML(e, personId, dayIdx, entryIdx, canEdit) {
       <div>
         ${e.firma ? `<div class="chip-firma">${_esc(e.firma)}</div>` : ''}
         ${e.urun  ? `<div class="chip-urun">${_esc(e.urun)}</div>`   : ''}
-        ${e.desc  ? `<div class="chip-desc" title="${_esc(e.desc)}">${_esc(e.desc)}</div>` : ''}
+        ${e.desc  ? `<div class="chip-desc">${_esc(e.desc)}</div>` : ''}
       </div>
       ${flags ? `<div class="chip-flags">${flags}</div>` : ''}
     </div>
@@ -296,7 +292,6 @@ function _bindToolbarEvents() {
     _renderTable();
   });
 
-  document.getElementById('btn-monthly')?.addEventListener('click', _openMonthly);
   document.getElementById('btn-admin-persons')?.addEventListener('click', _openAdmin);
 }
 
@@ -317,8 +312,6 @@ function _bindTableEvents() {
     });
   });
 
-  // Tooltip
-  _initChipTooltips();
 
   // Sil butonu
   ROOT.querySelectorAll('[data-del-person]').forEach(btn => {
@@ -756,45 +749,6 @@ function _bindModalFooter() {
 
 // ── Chip Tooltip ──────────────────────────────────────────────────────────────
 
-let _tooltip = null;
-
-function _initChipTooltips() {
-  if (!ROOT) return;
-  if (window.matchMedia('(hover: none)').matches) return; // touch cihazlarda tooltip yok
-  if (!_tooltip) {
-    _tooltip = document.createElement('div');
-    _tooltip.className = 'chip-tooltip';
-    document.body.appendChild(_tooltip);
-  }
-
-  ROOT.querySelectorAll('.chip-desc[title]').forEach(el => {
-    el.addEventListener('mouseenter', (e) => {
-      const text = el.getAttribute('title');
-      if (!text) return;
-      _tooltip.textContent = text;
-      _tooltip.classList.add('visible');
-      _positionTooltip(e);
-    });
-    el.addEventListener('mousemove', _positionTooltip);
-    el.addEventListener('mouseleave', () => {
-      _tooltip.classList.remove('visible');
-    });
-  });
-}
-
-function _positionTooltip(e) {
-  if (!_tooltip) return;
-  const pad = 10;
-  let x = e.clientX + pad;
-  let y = e.clientY + pad;
-  const tw = _tooltip.offsetWidth;
-  const th = _tooltip.offsetHeight;
-  if (x + tw > window.innerWidth - pad) x = e.clientX - tw - pad;
-  if (y + th > window.innerHeight - pad) y = e.clientY - th - pad;
-  _tooltip.style.left = x + 'px';
-  _tooltip.style.top  = y + 'px';
-}
-
 // ── Chip Preview Popup ────────────────────────────────────────────────────────
 
 let _previewEl = null;
@@ -891,21 +845,26 @@ function _monthlyModalHTML() {
 }
 
 function _openMonthly() {
-  const [y, w] = _currentWeek.split('-W');
   const monday = _weekIdToMonday(_currentWeek);
   _monthlyYear  = monday.getFullYear();
   _monthlyMonth = monday.getMonth(); // 0-based
 
-  _renderMonthlyTable();
-  const modal = ROOT.querySelector('#modal-monthly');
+  const modal = document.getElementById('modal-monthly');
   if (!modal) return;
+
+  // Launcher gibi gizli parent içindeyse body'e taşı (position:fixed çalışsın)
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+  }
+
+  _renderMonthlyTable();
   modal.hidden = false;
   requestAnimationFrame(() => modal.classList.add('is-open'));
 }
 
 function _renderMonthlyTable() {
   const MONTH_NAMES = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  ROOT.querySelector('#monthly-title').textContent = `${MONTH_NAMES[_monthlyMonth]} ${_monthlyYear} — Aylık Özet`;
+  document.getElementById('monthly-title').textContent = `${MONTH_NAMES[_monthlyMonth]} ${_monthlyYear} — Aylık Özet`;
 
   const types = ['imo','imosuz','ithalat','other'];
   const typeLabels = ["IMO'lu","IMO'suz","İthalat","Diğer"];
@@ -951,7 +910,7 @@ function _renderMonthlyTable() {
 
   const headCells = types.map((t,ti) => `<th class="m-${t}">${typeLabels[ti]}</th>`).join('');
 
-  ROOT.querySelector('#monthly-table-wrap').innerHTML = `
+  document.getElementById('monthly-table-wrap').innerHTML = `
     <table class="monthly-table">
       <thead><tr><th>KİŞİ</th>${headCells}<th>TOPLAM</th></tr></thead>
       <tbody>${rows}${totalRow}</tbody>
@@ -960,8 +919,8 @@ function _renderMonthlyTable() {
 }
 
 function _bindMonthlyEvents() {
-  const modal = ROOT?.querySelector('#modal-monthly');
-  ROOT.querySelector('#btn-monthly-close')?.addEventListener('click', () => {
+  const modal = document.getElementById('modal-monthly');
+  document.getElementById('btn-monthly-close')?.addEventListener('click', () => {
     modal?.classList.remove('is-open');
     modal?.addEventListener('transitionend', () => { if (modal) modal.hidden = true; }, { once: true });
   });
@@ -971,12 +930,12 @@ function _bindMonthlyEvents() {
       modal.addEventListener('transitionend', () => { modal.hidden = true; }, { once: true });
     }
   });
-  ROOT.querySelector('#btn-monthly-prev')?.addEventListener('click', () => {
+  document.getElementById('btn-monthly-prev')?.addEventListener('click', () => {
     _monthlyMonth--;
     if (_monthlyMonth < 0) { _monthlyMonth = 11; _monthlyYear--; }
     _renderMonthlyTable();
   });
-  ROOT.querySelector('#btn-monthly-next')?.addEventListener('click', () => {
+  document.getElementById('btn-monthly-next')?.addEventListener('click', () => {
     _monthlyMonth++;
     if (_monthlyMonth > 11) { _monthlyMonth = 0; _monthlyYear++; }
     _renderMonthlyTable();

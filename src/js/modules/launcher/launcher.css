@@ -21,12 +21,26 @@
 }
 
 .launcher__logo {
-  font-size: var(--text-3xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.launcher__logo-akkim {
+  font-size: calc(var(--text-3xl) * 1.15);
   font-weight: var(--weight-bold);
   letter-spacing: -0.03em;
   color: var(--color-text);
-  line-height: 1.1;
-  text-align: center;
+}
+
+.launcher__logo-sub {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--color-muted);
 }
 
 .launcher__subtitle {
@@ -48,9 +62,9 @@
 .user-grid {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   width: 100%;
-  max-width: 400px;
+  max-width: 280px;
 }
 
 .user-card {
@@ -58,7 +72,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-2) var(--space-4);
+  padding: var(--space-1) var(--space-3);
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -112,6 +126,17 @@
   align-items: center;
   gap: var(--space-2);
   margin-bottom: var(--space-6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.launcher__back:hover {
+  background: var(--color-surface);
 }
 
 .app-grid {
@@ -200,6 +225,13 @@
   letter-spacing: 0.04em;
   pointer-events: none;
   user-select: none;
+}
+
+/* ── Launcher Actions (Aylık Özet vb.) ───────────────────────────────────── */
+.launcher__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
 }
 
 /* ── Admin Pin Trigger ────────────────────────────────────────────────────── */

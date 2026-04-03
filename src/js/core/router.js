@@ -123,10 +123,10 @@ export function initRouter() {
     showView(btn.dataset.view);
   });
 
-  // Switch user butonu
-  const btnSwitch = document.getElementById('btn-switch-user');
-  if (btnSwitch) {
-    btnSwitch.addEventListener('click', () => {
+  // Kullanıcı chip tıklama → kullanıcı seçim ekranı
+  const headerUser = document.getElementById('header-user');
+  if (headerUser) {
+    headerUser.addEventListener('click', () => {
       emit('router:go-launcher', {});
     });
   }
@@ -144,13 +144,8 @@ export function goToApp(view) {
   const target = view || getLastView() || 'haftalik';
   showScreen('app');
   showView(target);
-
-  const btnSwitch = document.getElementById('btn-switch-user');
-  if (btnSwitch) btnSwitch.hidden = false;
 }
 
 export function goToLauncher() {
   showScreen('launcher');
-  const btnSwitch = document.getElementById('btn-switch-user');
-  if (btnSwitch) btnSwitch.hidden = true;
 }
