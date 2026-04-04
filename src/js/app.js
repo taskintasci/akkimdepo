@@ -155,18 +155,26 @@ function _setHeaderHidden(hidden) {
 }
 
 function _setToolbarHidden(hidden) {
-  const toolbar = document.querySelector('.haftalik-toolbar');
+  const currentView = document.body.classList.toString().match(/view-(\w+)/)?.[1];
+  const toolbarSelector = currentView === 'haftalik' ? '.haftalik-toolbar' : currentView === 'teyit' ? '.teyit-toolbar' : null;
+  
+  if (!toolbarSelector) return;
+  
+  const toolbar = document.querySelector(toolbarSelector);
   if (!toolbar) return;
   toolbar.classList.toggle('is-hidden', hidden);
   
-  // Update body class to adjust table header position
+  // Update body class to adjust table/content header position
   document.body.classList.toggle('toolbar-hidden', hidden);
 }
 
 function _handleHeaderScroll() {
   if (!appHeader) return;
 
-  if (!document.body.classList.contains('view-haftalik')) {
+  const isScrollableView = document.body.classList.contains('view-haftalik') || 
+                           document.body.classList.contains('view-teyit');
+  
+  if (!isScrollableView) {
     _setHeaderHidden(false);
     _setToolbarHidden(false);
     _lastScrollY = window.scrollY;

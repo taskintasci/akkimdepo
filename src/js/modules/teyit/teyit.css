@@ -9,6 +9,9 @@
 
 /* ── Toolbar ──────────────────────────────────────────────────────────────── */
 .teyit-toolbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: calc(var(--z-sticky) - 1);
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -17,6 +20,17 @@
   background: var(--color-surface);
   flex-shrink: 0;
   flex-wrap: wrap;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.view-teyit.header-hidden .teyit-toolbar {
+  top: 0;
+}
+
+.teyit-toolbar.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .teyit-date-label {
@@ -40,6 +54,11 @@
   text-align: center;
   line-height: 1;
   flex-shrink: 0;
+}
+
+/* ── Toolbar hidden state ─────────────────────────────────────────────────── */
+.view-teyit.header-hidden .teyit-toolbar {
+  top: 0;
 }
 
 /* ── Stat Chips (header altı) ─────────────────────────────────────────────── */
