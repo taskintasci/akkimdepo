@@ -54,8 +54,6 @@ export function showView(name) {
 
   _currentView = name;
   setLastView(name);
-  document.body.classList.remove('view-randevu', 'view-haftalik', 'view-teyit');
-  document.body.classList.add(`view-${name}`);
 
   // Nav aktif durumu güncelle
   _updateNavActive(name);
