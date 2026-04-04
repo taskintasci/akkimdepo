@@ -572,7 +572,7 @@ function _entryModalHTML() {
           </div>
 
           <div class="field mt-4">
-            <label class="field__label">Yapılacaklar</label>
+            <span class="field__label">Yapılacaklar</span>
             <div class="label-chips">
               <button class="label-chip" data-label="ozel"    type="button">🏷️ Özel Etiket</button>
               <button class="label-chip" data-label="lashing" type="button">⛓️ Lashing</button>

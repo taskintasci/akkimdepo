@@ -518,7 +518,7 @@ function _modalHTML() {
 
           <!-- Araç tipi -->
           <div class="field mb-4">
-            <label class="field__label">Araç Tipi</label>
+            <span class="field__label">Araç Tipi</span>
             <div class="arac-tipi-row">
               <button class="arac-tipi-btn imo"    data-arac-tipi="imo"    type="button">IMO'lu</button>
               <button class="arac-tipi-btn imosuz" data-arac-tipi="imosuz" type="button">IMO'suz</button>
@@ -584,7 +584,7 @@ function _modalHTML() {
 
           <!-- Yapılacaklar -->
           <div class="field mt-4">
-            <label class="field__label">Yapılacaklar</label>
+            <span class="field__label">Yapılacaklar</span>
             <div class="label-chips">
               <button class="label-chip" data-label="ozel"    type="button">🏷️ Özel Etiket</button>
               <button class="label-chip" data-label="lashing" type="button">⛓️ Lashing</button>

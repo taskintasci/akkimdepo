@@ -19,13 +19,15 @@
 .app-header {
   position: sticky;
   top: 0;
+  left: 0;
   z-index: var(--z-sticky);
   height: var(--header-h);
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-6);
-  width: 100%;
+  width: 100vw;
+  box-sizing: border-box;
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -68,6 +70,7 @@
 
 .app-header__spacer {
   flex: 1;
+  flex-shrink: 0;
 }
 
 .app-header__user {
@@ -76,6 +79,7 @@
   gap: var(--space-2);
   cursor: pointer;
   transition: opacity var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
 }
 
 .app-header__user:hover {
