@@ -9,6 +9,9 @@
 
 /* ── Toolbar ──────────────────────────────────────────────────────────────── */
 .haftalik-toolbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: calc(var(--z-sticky) - 1);
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -16,10 +19,18 @@
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
   flex-shrink: 0;
-  min-width: 800px;
-  position: sticky;
-  top: var(--header-h);
-  z-index: 5;
+  flex-wrap: wrap;
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.view-haftalik.header-hidden .haftalik-toolbar {
+  top: 0;
+}
+
+.haftalik-toolbar.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .haftalik-toolbar__nav {
@@ -52,27 +63,29 @@
 .haftalik-table-outer {
   flex: 1;
   padding: var(--space-4) var(--space-6);
+  overflow-x: visible;
 }
 
 .haftalik-table {
   width: 100%;
   table-layout: fixed; /* sütunlar içeriğe göre genişlemesin, width:100% kesin uygulansın */
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 860px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow: clip;
+  overflow: visible;
   box-shadow: var(--shadow-md);
 }
 
 /* ── Table Header ─────────────────────────────────────────────────────────── */
 .haftalik-table thead {
-  position: sticky;
-  top: calc(var(--header-h) + 62px); /* header 60px + toolbar ~62px */
-  z-index: var(--z-sticky);
+  /* no position here; sticky is applied at the th level for better browser support */
 }
 
 .haftalik-table th {
+  position: sticky;
+  top: var(--header-h);
+  z-index: calc(var(--z-sticky) + 2);
   background: var(--gray-100);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-xs);
@@ -86,10 +99,21 @@
 }
 
 .haftalik-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: calc(var(--z-sticky) + 3);
   text-align: left;
-  width: 150px;
-  min-width: 150px;
+  width: 130px;
+  min-width: 130px;
   background: var(--gray-100);
+}
+
+body.view-haftalik.header-hidden .haftalik-table th {
+  top: 0;
+}
+
+body.view-haftalik.toolbar-hidden .haftalik-table th {
+  top: 0;
 }
 
 .th-holiday {
@@ -220,7 +244,7 @@
 
 /* ── Day Cell ─────────────────────────────────────────────────────────────── */
 .day-cell {
-  min-width: 120px;
+  min-width: 140px;
   vertical-align: top;
 }
 
@@ -896,6 +920,12 @@
 @media (max-width: 768px) {
   .haftalik-toolbar {
     padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .haftalik-toolbar__week {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .haftalik-table-outer {

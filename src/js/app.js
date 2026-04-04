@@ -144,6 +144,77 @@ on('router:go-appselect', () => {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
+const appHeader = document.getElementById('app-header');
+let _lastScrollY = window.scrollY;
+let _scrollTicking = false;
+
+function _setHeaderHidden(hidden) {
+  if (!appHeader) return;
+  appHeader.classList.toggle('is-hidden', hidden);
+  document.body.classList.toggle('header-hidden', hidden);
+}
+
+function _setToolbarHidden(hidden) {
+  const toolbar = document.querySelector('.haftalik-toolbar');
+  if (!toolbar) return;
+  toolbar.classList.toggle('is-hidden', hidden);
+  
+  // Update body class to adjust table header position
+  document.body.classList.toggle('toolbar-hidden', hidden);
+}
+
+function _handleHeaderScroll() {
+  if (!appHeader) return;
+
+  if (!document.body.classList.contains('view-haftalik')) {
+    _setHeaderHidden(false);
+    _setToolbarHidden(false);
+    _lastScrollY = window.scrollY;
+    return;
+  }
+
+  const currentY = window.scrollY;
+  const delta = currentY - _lastScrollY;
+
+  if (Math.abs(delta) < 10) return;
+
+  const hideHeaderThreshold = 80;
+  const hideToolbarAfterHeader = 20;
+  const shouldHideToolbar = currentY > hideHeaderThreshold + hideToolbarAfterHeader;
+
+  if (currentY > _lastScrollY) {
+    if (shouldHideToolbar) {
+      _setToolbarHidden(true);
+    } else if (currentY > hideHeaderThreshold) {
+      _setHeaderHidden(true);
+    }
+  } else {
+    if (currentY < hideHeaderThreshold + hideToolbarAfterHeader) {
+      _setToolbarHidden(false);
+    }
+    if (currentY < hideHeaderThreshold) {
+      _setHeaderHidden(false);
+    }
+  }
+
+  _lastScrollY = currentY;
+}
+
+window.addEventListener('scroll', () => {
+  if (_scrollTicking) return;
+  _scrollTicking = true;
+  requestAnimationFrame(() => {
+    _handleHeaderScroll();
+    _scrollTicking = false;
+  });
+});
+
+on('router:view', () => {
+  requestAnimationFrame(() => {
+    _handleHeaderScroll();
+  });
+});
+
 async function init() {
   initAuth();
   initRouter();

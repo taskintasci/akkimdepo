@@ -25,10 +25,23 @@
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-6);
+  width: 100%;
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.app-header.is-hidden {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: calc(var(--z-sticky) + 5);
 }
 
 .app-header__logo {
@@ -60,6 +73,15 @@
 
 .app-header__user:hover {
   opacity: 0.75;
+}
+
+.app-header {
+  transition: transform 220ms ease, opacity 220ms ease;
+}
+
+.app-header.is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
 }
 
 /* ── Page Content ─────────────────────────────────────────────────────────── */
