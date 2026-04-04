@@ -176,10 +176,10 @@ function _handleHeaderScroll() {
   const currentY = window.scrollY;
   const delta = currentY - _lastScrollY;
 
-  if (Math.abs(delta) < 10) return;
+  if (Math.abs(delta) < 5) return;
 
-  const hideHeaderThreshold = 80;
-  const hideToolbarAfterHeader = 20;
+  const hideHeaderThreshold = 60;
+  const hideToolbarAfterHeader = 15;
   const shouldHideToolbar = currentY > hideHeaderThreshold + hideToolbarAfterHeader;
 
   if (currentY > _lastScrollY) {
@@ -207,7 +207,7 @@ window.addEventListener('scroll', () => {
     _handleHeaderScroll();
     _scrollTicking = false;
   });
-});
+}, { passive: true });
 
 on('router:view', () => {
   requestAnimationFrame(() => {
