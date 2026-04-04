@@ -124,7 +124,7 @@ function _updateHeaderUser() {
 
   headerUser.innerHTML = `
     <span class="avatar avatar--sm" data-color="${color}" aria-hidden="true">${initials}</span>
-    <span class="text-sm font-medium hide-mobile">${_esc(user.name)}</span>
+    <span class="text-sm font-medium">${_esc(user.name)}</span>
   `;
 }
 
