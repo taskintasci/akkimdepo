@@ -56,18 +56,19 @@
 
 .haftalik-table {
   width: 100%;
+  table-layout: fixed; /* sütunlar içeriğe göre genişlemesin, width:100% kesin uygulansın */
   border-collapse: collapse;
   min-width: 800px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: clip;
   box-shadow: var(--shadow-md);
 }
 
 /* ── Table Header ─────────────────────────────────────────────────────────── */
 .haftalik-table thead {
   position: sticky;
-  top: 0;
+  top: calc(var(--header-h) + 62px); /* header 60px + toolbar ~62px */
   z-index: var(--z-sticky);
 }
 
@@ -134,6 +135,14 @@
   font-weight: var(--weight-medium);
   text-transform: none;
   letter-spacing: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1.3;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 /* ── Table Body ───────────────────────────────────────────────────────────── */
@@ -176,21 +185,37 @@
 
 .name-cell__inner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
 }
 
-.name-cell__text {
+.name-cell__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.name-cell__first {
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
-  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.name-cell__last {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: 1.3;
 }
 
 .name-cell__role {
   font-size: var(--text-xs);
   color: var(--color-muted);
   font-weight: var(--weight-medium);
+  line-height: 1.3;
+  margin-top: 1px;
 }
 
 /* ── Day Cell ─────────────────────────────────────────────────────────────── */
@@ -829,6 +854,42 @@
 .chip-preview__edit-btn {
   width: 100%;
   margin-top: var(--space-2);
+}
+
+/* ── Chip Hover Tooltip ───────────────────────────────────────────────────── */
+.chip-hover-tip {
+  position: fixed;
+  z-index: 9999;
+  background: var(--gray-900);
+  color: #fff;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-family: var(--font-ui);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 200px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.chip-hover-tip.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chip-hover-tip__count {
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+}
+
+.chip-hover-tip__desc {
+  opacity: 0.75;
+  white-space: pre-wrap;
 }
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */

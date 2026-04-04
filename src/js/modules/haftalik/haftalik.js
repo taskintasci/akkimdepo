@@ -135,14 +135,18 @@ function _tableHTML() {
   const visiblePersons = _persons.filter(p => p.role !== 'wms_operator');
 
   const bodyRows = visiblePersons.map(p => {
+    const nameParts = p.name.trim().split(/\s+/);
+    const firstName = nameParts[0] || '';
+    const lastName  = nameParts.slice(1).join(' ');
     const nameCells = `
       <td class="name-cell">
         <div class="name-cell__inner">
           <span class="avatar avatar--sm" data-color="${getAvatarColor(p.name)}" aria-hidden="true">
             ${getInitials(p.name)}
           </span>
-          <div>
-            <div class="name-cell__text">${_esc(p.name)}</div>
+          <div class="name-cell__lines">
+            <div class="name-cell__first">${_esc(firstName)}</div>
+            ${lastName ? `<div class="name-cell__last">${_esc(lastName)}</div>` : ''}
             ${p.role ? `<div class="name-cell__role">${_esc(p.role)}</div>` : ''}
           </div>
         </div>
@@ -363,6 +367,60 @@ function _bindTableEvents() {
     });
   });
 
+  // Chip hover tooltip (sadece hover destekleyen cihazlarda)
+  if (!window.matchMedia('(hover: none)').matches) {
+    _initChipTooltips();
+  }
+}
+
+// ── Chip Tooltip ──────────────────────────────────────────────────────────────
+
+let _chipTip = null;
+let _chipTipTimer = null;
+
+function _initChipTooltips() {
+  if (!_chipTip) {
+    _chipTip = document.createElement('div');
+    _chipTip.className = 'chip-hover-tip';
+    document.body.appendChild(_chipTip);
+  }
+
+  ROOT.querySelectorAll('.entry-chip[data-preview]').forEach(chip => {
+    chip.addEventListener('mouseenter', () => {
+      _chipTipTimer = setTimeout(() => {
+        try {
+          const d = JSON.parse(chip.dataset.preview);
+          const lines = [
+            d.count ? `<span class="chip-hover-tip__count">${d.count} araç</span>` : '',
+            d.firma ? `<span>${d.firma}</span>` : '',
+            d.urun  ? `<span>${d.urun}</span>`  : '',
+            d.desc  ? `<span class="chip-hover-tip__desc">${d.desc}</span>` : '',
+          ].filter(Boolean).join('');
+          if (!lines) return;
+          _chipTip.innerHTML = lines;
+          _chipTip.classList.add('is-visible');
+          _positionChipTip(chip);
+        } catch {}
+      }, 500);
+    });
+    chip.addEventListener('mouseleave', () => {
+      clearTimeout(_chipTipTimer);
+      _chipTip?.classList.remove('is-visible');
+    });
+  });
+}
+
+function _positionChipTip(chip) {
+  if (!_chipTip) return;
+  const r = chip.getBoundingClientRect();
+  const tw = _chipTip.offsetWidth;
+  const pad = 8;
+  let x = r.right + pad;
+  let y = r.top;
+  if (x + tw > window.innerWidth - pad) x = r.left - tw - pad;
+  if (y + _chipTip.offsetHeight > window.innerHeight - pad) y = window.innerHeight - _chipTip.offsetHeight - pad;
+  _chipTip.style.left = x + 'px';
+  _chipTip.style.top  = Math.max(pad, y) + 'px';
 }
 
 // ── Drag state ────────────────────────────────────────────────────────────────
