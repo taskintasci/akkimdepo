@@ -1,0 +1,161 @@
+/* ─── Calendar Component (Randevu) ───────────────────────────────────────── */
+
+.calendar {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Calendar Header ──────────────────────────────────────────────────────── */
+.calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.calendar__month-title {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+/* ── Day Labels ───────────────────────────────────────────────────────────── */
+.calendar__days-header {
+  display: grid;
+  grid-template-columns: 28px repeat(7, 1fr);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.calendar__day-label {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: var(--space-1) 0;
+}
+
+.calendar__day-label--wk {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  letter-spacing: 0;
+}
+
+/* ── Calendar Grid ────────────────────────────────────────────────────────── */
+.calendar__grid {
+  display: grid;
+  grid-template-columns: 28px repeat(7, 1fr);
+  gap: 2px;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+
+/* ── Week Number Cell ─────────────────────────────────────────────────────── */
+.calendar__week-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  opacity: 0.7;
+  cursor: default;
+  min-height: 44px;
+}
+
+/* ── Day Cell ─────────────────────────────────────────────────────────────── */
+.calendar__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out);
+  min-height: 44px;
+}
+
+.calendar__day:hover:not(.is-disabled):not(.is-outside) {
+  background: var(--gray-100);
+}
+
+.calendar__day.is-selected {
+  background: var(--color-accent-bg);
+}
+
+.calendar__day.is-today .calendar__day-num {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+}
+
+.calendar__day.is-selected .calendar__day-num {
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: var(--weight-bold);
+}
+
+.calendar__day.is-today.is-selected .calendar__day-num {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.calendar__day.is-holiday {
+  background-color: rgba(255, 193, 7, 0.15);
+  opacity: 0.85;
+}
+
+.calendar__day.is-holiday:hover {
+  background-color: rgba(255, 193, 7, 0.25) !important;
+}
+
+.calendar__day.is-outside {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calendar__day.is-weekend .calendar__day-num {
+  color: var(--color-muted);
+}
+
+.calendar__day-num {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+/* ── Day Dots (booking indicators) ───────────────────────────────────────── */
+.calendar__dots {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.calendar__dot.imo     { background: var(--color-imo); }
+.calendar__dot.imosuz  { background: var(--color-normal); }
+.calendar__dot.ithalat { background: var(--color-ithalat); }

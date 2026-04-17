@@ -1,0 +1,267 @@
+/* ─── Launcher Screen ─────────────────────────────────────────────────────── */
+
+.launcher {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-bg);
+}
+
+/* ── Logo / Branding ──────────────────────────────────────────────────────── */
+.launcher__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-10);
+  animation: fadeDown var(--duration-normal) var(--ease-out) both;
+}
+
+.launcher__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.launcher__logo-akkim {
+  font-size: calc(var(--text-3xl) * 1.15);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+}
+
+.launcher__logo-sub {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--color-muted);
+}
+
+.launcher__subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Step: Kullanıcı Seçimi ───────────────────────────────────────────────── */
+.launcher__heading {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.user-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.user-card:hover {
+  background: var(--color-surface);
+  border-color: var(--indigo-300);
+}
+
+.user-card:active {
+  opacity: 0.8;
+}
+
+.user-card--special {
+  background: var(--color-surface);
+}
+
+.user-card__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.user-card__role {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  font-weight: var(--weight-medium);
+}
+
+.user-card__badge {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* ── Step: Uygulama Seçimi ────────────────────────────────────────────────── */
+.launcher__back {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.launcher__back:hover {
+  background: var(--color-surface);
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 520px;
+}
+
+.app-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: box-shadow var(--duration-normal) var(--ease-out),
+              border-color var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+}
+
+.app-card:active {
+  transform: scale(0.97);
+}
+
+.app-card:nth-child(1):hover { border-color: var(--indigo-300); }
+.app-card:nth-child(2):hover { border-color: var(--violet-300); }
+.app-card:nth-child(3):hover { border-color: var(--green-300); }
+
+.app-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-card:nth-child(1) .app-card__icon {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+}
+.app-card:nth-child(2) .app-card__icon {
+  background: var(--color-ithalat-bg);
+  color: var(--color-ithalat);
+}
+.app-card:nth-child(3) .app-card__icon {
+  background: var(--color-normal-bg);
+  color: var(--color-normal);
+}
+
+.app-card__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.app-card__desc {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  line-height: var(--leading-snug);
+}
+
+/* ── Version Badge ────────────────────────────────────────────────────────── */
+.launcher__version {
+  position: fixed;
+  bottom: var(--space-3);
+  right: var(--space-4);
+  font-size: 11px;
+  font-family: var(--font-data);
+  font-weight: var(--weight-medium);
+  color: var(--color-subtle);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── Launcher Actions (Aylık Özet vb.) ───────────────────────────────────── */
+.launcher__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+/* ── Admin Pin Trigger ────────────────────────────────────────────────────── */
+.launcher__admin-link {
+  margin-top: var(--space-8);
+  font-size: var(--text-xs);
+  color: var(--color-subtle);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.launcher__admin-link:hover {
+  color: var(--color-muted);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .app-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
+  }
+
+  .app-card {
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .app-card__icon {
+    width: 40px;
+    height: 40px;
+  }
+}
