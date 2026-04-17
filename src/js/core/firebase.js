@@ -22,13 +22,4 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-// Firestore cache (offline persistence) — settings() db referansı alınmadan önce çağrılmalı
-try {
-  firebase.firestore().settings({
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-  });
-} catch {
-  // settings() yalnızca ilk çağrıda çalışır; sonraki sekmelerde sessizce geç
-}
-
 export const db = firebase.firestore();
