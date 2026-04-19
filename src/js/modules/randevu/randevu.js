@@ -6,7 +6,7 @@
 
 import { ADR_SLOTS, NORMAL_SLOTS, toTime, isSlotPast } from './slots.js';
 import { watchBookings, saveBookingDate,
-         loadBookingDate }                              from '../../core/storage.js';
+         loadBookingDate, loadBookingsRange }           from '../../core/storage.js';
 import { emit, on }                                     from '../../core/events.js';
 import { getIsAdminSession, getActiveUser }             from '../../core/auth.js';
 import { isHoliday, getHolidayName }                   from '../../utils/holidays.js';
@@ -41,6 +41,7 @@ export function init() {
   _selectedDate = lastDate || null;
 
   _render();
+  _loadMonthBookings(_currentYear, _currentMonth);
 
   // Auth değişince butonları güncelle
   on('auth:changed', () => {
@@ -49,6 +50,16 @@ export function init() {
   on('user:changed', () => {
     if (_view === 'schedule') _renderSchedule();
   });
+}
+
+async function _loadMonthBookings(year, month) {
+  const days = getMonthDays(year, month);
+  if (!days.length) return;
+  const startDate = days[0];
+  const endDate   = days[days.length - 1];
+  const data = await loadBookingsRange(startDate, endDate);
+  Object.assign(_allBookings, data);
+  if (_view === 'home') _renderHome();
 }
 
 // ── Top-level Render ─────────────────────────────────────────────────────────
@@ -223,12 +234,14 @@ function _bindCalendarEvents() {
     const { year, month } = prevMonth(_currentYear, _currentMonth);
     _currentYear = year; _currentMonth = month;
     _renderHome();
+    _loadMonthBookings(_currentYear, _currentMonth);
   });
 
   document.getElementById('cal-next')?.addEventListener('click', () => {
     const { year, month } = nextMonth(_currentYear, _currentMonth);
     _currentYear = year; _currentMonth = month;
     _renderHome();
+    _loadMonthBookings(_currentYear, _currentMonth);
   });
 
   ROOT.querySelectorAll('.calendar__day[data-date]').forEach(btn => {
