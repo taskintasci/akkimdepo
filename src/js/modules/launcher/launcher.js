@@ -10,7 +10,7 @@ import { loadPersons }                                      from '../../core/sto
 import { on, emit }                                         from '../../core/events.js';
 import { getActiveUser, normalizeRole, clearUser,
          refreshToken }                                     from '../../core/auth.js';
-import { functions }                                        from '../../core/firebase.js';
+import { functions, auth }                                  from '../../core/firebase.js';
 import { goToApp }                                          from '../../core/router.js';
 import { getInitials, getAvatarColor }                      from '../../utils/format.js';
 import { getIsAdminSession }                                from '../../core/auth.js';
@@ -72,6 +72,12 @@ function _renderStep2(user) {
             <div style="font-size:var(--text-xs);color:var(--color-muted);">${_esc(user.email || '')}</div>
           </div>
         </div>
+        <button class="btn btn--ghost btn--sm" id="btn-change-password" type="button" title="Şifre sıfırlama maili gönder">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Şifre Değiştir
+        </button>
         <button class="btn btn--ghost btn--sm" id="btn-logout" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
@@ -114,6 +120,18 @@ function _renderStep2(user) {
   // App kartları
   ROOT.querySelectorAll('.app-card').forEach(card => {
     card.addEventListener('click', () => goToApp(card.dataset.view));
+  });
+
+  // Şifre değiştir
+  ROOT.querySelector('#btn-change-password')?.addEventListener('click', async () => {
+    const user = getActiveUser();
+    if (!user?.email) return;
+    try {
+      await auth.sendPasswordResetEmail(user.email);
+      window.App?.showToast({ title: 'Şifre sıfırlama maili gönderildi', desc: user.email, type: 'success' });
+    } catch {
+      window.App?.showToast({ title: 'Mail gönderilemedi', type: 'error' });
+    }
   });
 
   // Çıkış
