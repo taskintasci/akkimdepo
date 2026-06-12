@@ -144,6 +144,7 @@ async function init() {
       goToLauncher();
       initLauncher().then(() => goToAppSelect());
     } else {
+      initLogin();
       goToLogin();
     }
   });
