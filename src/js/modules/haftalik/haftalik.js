@@ -147,9 +147,9 @@ function _tableHTML() {
     </th>`;
   }).join('');
 
-  // tbody
+  // tbody — sadece mht_operator rolündeki kişilere satır aç
   const canEdit = _canEdit();
-  const visiblePersons = _persons.filter(p => p.role !== 'wms_operator');
+  const visiblePersons = _persons.filter(p => p.role === 'mht_operator' || p.role === 'normal');
 
   const bodyRows = visiblePersons.map(p => {
     const nameParts = p.name.trim().split(/\s+/);
@@ -164,7 +164,7 @@ function _tableHTML() {
           <div class="name-cell__lines">
             <div class="name-cell__first">${_esc(firstName)}</div>
             ${lastName ? `<div class="name-cell__last">${_esc(lastName)}</div>` : ''}
-            ${p.role ? `<div class="name-cell__role">${_esc(p.role)}</div>` : ''}
+            ${p.role ? `<div class="name-cell__role">${_esc(_roleLabel(p.role))}</div>` : ''}
           </div>
         </div>
       </td>
@@ -195,10 +195,10 @@ function _tableHTML() {
     return `<tr>${nameCells}${dayCells}</tr>`;
   }).join('');
 
-  // Totals row
+  // Totals row — sadece tabloda görünen kişilerin toplamı
   const totalCells = days.map((_, i) => {
     let total = 0;
-    _persons.forEach(p => {
+    visiblePersons.forEach(p => {
       (d[`${p.id}_${i}`] || []).forEach(e => { total += parseInt(e.count) || 0; });
     });
     const capClass = total >= DAILY_CAP ? (total > DAILY_CAP ? 'over' : 'warn') : '';
@@ -1604,6 +1604,11 @@ function _genId(name) {
     .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s')
     .replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
     .replace(/[^a-z0-9]/g,'') + '_' + Date.now().toString(36);
+}
+
+function _roleLabel(role) {
+  const MAP = { admin: 'Admin', wms: 'WMS Operatör', mht_operator: 'MHT Operatör', normal: 'MHT Operatör', guest: 'Misafir' };
+  return MAP[role] || role;
 }
 
 function _esc(str) {
