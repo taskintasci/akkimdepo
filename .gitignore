@@ -2,6 +2,8 @@ node_modules/
 functions/node_modules/
 .claude/
 .env
+*.env
+.env*
 *.key.json
 *-firebase-adminsdk-*.json
 .firebase/
@@ -10,3 +12,5 @@ firestore-debug.log
 ui-debug.log
 .DS_Store
 Thumbs.db
+memory/
+CLAUDE.md
