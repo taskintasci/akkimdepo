@@ -25,7 +25,7 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  min-width: 860px;
+  min-width: 0;
   width: 100%;
   box-sizing: border-box;
   background: rgba(255,255,255,0.85);
@@ -219,6 +219,15 @@ body.view-teyit .header-portal#teyit-toolbar-portal {
 @media (max-width: 480px) {
   .hide-mobile {
     display: none !important;
+  }
+
+  .app-header__main {
+    padding: 0 var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .page-content {
+    padding: var(--space-3);
   }
 }
 

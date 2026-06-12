@@ -183,6 +183,19 @@ html.dark #screen-login {
   .login-form-panel { padding: var(--space-8); }
 }
 
+@media (max-width: 480px) {
+  .login-form-panel { padding: var(--space-6) var(--space-5); }
+
+  #screen-login { padding: var(--space-3); }
+
+  .login-form__title { font-size: var(--text-2xl); }
+
+  .login-theme-btn {
+    top: var(--space-4);
+    right: var(--space-4);
+  }
+}
+
 /* Mobile brand bar (shown only on small screens) */
 .login-mobile-brand {
   display: none;

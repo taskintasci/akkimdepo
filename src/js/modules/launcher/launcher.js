@@ -78,18 +78,18 @@ function _renderStep2(user) {
             <div style="font-size:var(--text-xs);color:var(--color-muted);">${_esc(user.email || '')}</div>
           </div>
         </div>
-        <button class="btn btn--ghost btn--sm" id="btn-change-password" type="button" title="Şifre sıfırlama maili gönder">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-          </svg>
-          Şifre Değiştir
-        </button>
-        <button class="btn btn--ghost btn--sm" id="btn-logout" type="button">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-          </svg>
-          Çıkış Yap
-        </button>
+        <div style="display:flex;gap:var(--space-1);flex-shrink:0;">
+          <button class="btn btn--ghost btn--icon btn--sm" id="btn-change-password" type="button" title="Şifre Değiştir" aria-label="Şifre Değiştir">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </button>
+          <button class="btn btn--ghost btn--icon btn--sm" id="btn-logout" type="button" title="Çıkış Yap" aria-label="Çıkış Yap">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="app-grid stagger">
