@@ -148,12 +148,8 @@ function _tableHTML() {
   }).join('');
 
   // tbody
-  const canEdit    = _canEdit();
-  const activeUser = _activeUser();
-  const isMht      = activeUser?.role === 'mht_operator';
-  const visiblePersons = isMht
-    ? _persons.filter(p => p.id === activeUser?.id)
-    : _persons.filter(p => p.role !== 'wms_operator');
+  const canEdit = _canEdit();
+  const visiblePersons = _persons.filter(p => p.role !== 'wms_operator');
 
   const bodyRows = visiblePersons.map(p => {
     const nameParts = p.name.trim().split(/\s+/);
@@ -180,6 +176,7 @@ function _tableHTML() {
       const isToday    = dateStr === todayStr;
       const isHol      = isHoliday(dateStr);
       const isArifeDay = isArife(dateStr);
+      const activeUser = _activeUser();
       const canEditRow = canEdit && (_isAdmin() || activeUser?.role === 'wms' || activeUser?.id === p.id);
       const dropAttr = canEditRow
         ? `data-drop-person="${p.id}" data-drop-day="${i}"`
