@@ -177,7 +177,7 @@ function _tableHTML() {
       const isHol      = isHoliday(dateStr);
       const isArifeDay = isArife(dateStr);
       const activeUser = _activeUser();
-      const canEditRow = canEdit && (_isAdmin() || activeUser?.role === 'wms' || activeUser?.id === p.id);
+      const canEditRow = canEdit && (_isAdmin() || activeUser?.role === 'wms' || _getPersonId(activeUser) === p.id);
       const dropAttr = canEditRow
         ? `data-drop-person="${p.id}" data-drop-day="${i}"`
         : '';
@@ -1339,8 +1339,8 @@ async function _syncConfirm() {
   const user = getActiveUser();
   const isAdmin = _isAdmin();
   const personId = isAdmin
-    ? (ROOT.querySelector('#sync-person-sel')?.value || user?.id)
-    : user?.id;
+    ? (ROOT.querySelector('#sync-person-sel')?.value || _getPersonId(user))
+    : _getPersonId(user);
   if (!personId) { _syncDismiss(); return; }
 
   const [y, m, d] = _syncBooking.dateKey.split('-');
@@ -1574,6 +1574,13 @@ function _activeUser() {
   return getActiveUser();
 }
 
+// Firebase UID → Firestore p.id (eski custom ID ile yeni UID farkını kapatır)
+function _getPersonId(user) {
+  if (!user) return null;
+  const p = _persons.find(p => p.id === user.id || p.uid === user.id);
+  return p?.id ?? user.id;
+}
+
 function _save() {
   _saving = true;
   saveWeeklyWeek(_currentWeek, JSON.parse(JSON.stringify(_dataFor(_currentWeek))))
@@ -1638,7 +1645,7 @@ window.H = {
     const weekData = _dataFor(wk);
     const user = getActiveUser();
     const canSeeAll = _isAdmin() || user?.role === 'wms' || user?.role === 'wms_operator';
-    const persons = canSeeAll ? _persons : _persons.filter(p => p.id === user?.id);
+    const persons = canSeeAll ? _persons : _persons.filter(p => p.id === _getPersonId(user));
     return persons.flatMap(p =>
       (weekData[`${p.id}_${dayIdx}`] || []).map(e =>
         Object.assign({}, e, { personId: p.id, personName: p.name })
