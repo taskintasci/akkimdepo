@@ -147,9 +147,9 @@ function _tableHTML() {
     </th>`;
   }).join('');
 
-  // tbody
+  // tbody — sadece mht_operator rolündeki kişilere satır aç
   const canEdit = _canEdit();
-  const visiblePersons = _persons.filter(p => p.role !== 'wms_operator');
+  const visiblePersons = _persons.filter(p => p.role === 'mht_operator' || p.role === 'normal');
 
   const bodyRows = visiblePersons.map(p => {
     const nameParts = p.name.trim().split(/\s+/);
@@ -164,7 +164,7 @@ function _tableHTML() {
           <div class="name-cell__lines">
             <div class="name-cell__first">${_esc(firstName)}</div>
             ${lastName ? `<div class="name-cell__last">${_esc(lastName)}</div>` : ''}
-            ${p.role ? `<div class="name-cell__role">${_esc(p.role)}</div>` : ''}
+            ${p.role ? `<div class="name-cell__role">${_esc(_roleLabel(p.role))}</div>` : ''}
           </div>
         </div>
       </td>
@@ -177,7 +177,7 @@ function _tableHTML() {
       const isHol      = isHoliday(dateStr);
       const isArifeDay = isArife(dateStr);
       const activeUser = _activeUser();
-      const canEditRow = canEdit && (_isAdmin() || activeUser?.role === 'wms' || activeUser?.id === p.id);
+      const canEditRow = canEdit && (_isAdmin() || activeUser?.role === 'wms' || _getPersonId(activeUser) === p.id);
       const dropAttr = canEditRow
         ? `data-drop-person="${p.id}" data-drop-day="${i}"`
         : '';
@@ -195,10 +195,10 @@ function _tableHTML() {
     return `<tr>${nameCells}${dayCells}</tr>`;
   }).join('');
 
-  // Totals row
+  // Totals row — sadece tabloda görünen kişilerin toplamı
   const totalCells = days.map((_, i) => {
     let total = 0;
-    _persons.forEach(p => {
+    visiblePersons.forEach(p => {
       (d[`${p.id}_${i}`] || []).forEach(e => { total += parseInt(e.count) || 0; });
     });
     const capClass = total >= DAILY_CAP ? (total > DAILY_CAP ? 'over' : 'warn') : '';
@@ -1339,8 +1339,8 @@ async function _syncConfirm() {
   const user = getActiveUser();
   const isAdmin = _isAdmin();
   const personId = isAdmin
-    ? (ROOT.querySelector('#sync-person-sel')?.value || user?.id)
-    : user?.id;
+    ? (ROOT.querySelector('#sync-person-sel')?.value || _getPersonId(user))
+    : _getPersonId(user);
   if (!personId) { _syncDismiss(); return; }
 
   const [y, m, d] = _syncBooking.dateKey.split('-');
@@ -1574,6 +1574,13 @@ function _activeUser() {
   return getActiveUser();
 }
 
+// Firebase UID → Firestore p.id (eski custom ID ile yeni UID farkını kapatır)
+function _getPersonId(user) {
+  if (!user) return null;
+  const p = _persons.find(p => p.id === user.id || p.uid === user.id);
+  return p?.id ?? user.id;
+}
+
 function _save() {
   _saving = true;
   saveWeeklyWeek(_currentWeek, JSON.parse(JSON.stringify(_dataFor(_currentWeek))))
@@ -1606,6 +1613,11 @@ function _genId(name) {
     .replace(/[^a-z0-9]/g,'') + '_' + Date.now().toString(36);
 }
 
+function _roleLabel(role) {
+  const MAP = { admin: 'Admin', wms: 'WMS Operatör', mht_operator: 'MHT Operatör', normal: 'MHT Operatör', guest: 'Misafir' };
+  return MAP[role] || role;
+}
+
 function _esc(str) {
   return String(str ?? '')
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1633,7 +1645,7 @@ window.H = {
     const weekData = _dataFor(wk);
     const user = getActiveUser();
     const canSeeAll = _isAdmin() || user?.role === 'wms' || user?.role === 'wms_operator';
-    const persons = canSeeAll ? _persons : _persons.filter(p => p.id === user?.id);
+    const persons = canSeeAll ? _persons : _persons.filter(p => p.id === _getPersonId(user));
     return persons.flatMap(p =>
       (weekData[`${p.id}_${dayIdx}`] || []).map(e =>
         Object.assign({}, e, { personId: p.id, personName: p.name })

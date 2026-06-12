@@ -1,8 +1,8 @@
 /**
  * Auth — Firebase Authentication wrapper
  *
- * Rol hiyerarşisi: admin > wms > normal > guest
- * Roller Firebase Custom Claims üzerinde taşınır: { role: 'admin'|'wms'|'normal' }
+ * Rol hiyerarşisi: admin > wms > mht_operator > guest
+ * Roller Firebase Custom Claims üzerinde taşınır: { role: 'admin'|'wms'|'mht_operator' }
  */
 
 import { auth } from './firebase.js';
@@ -21,7 +21,7 @@ export function initAuth(onReady) {
   auth.onAuthStateChanged(async (firebaseUser) => {
     if (firebaseUser) {
       const tokenResult = await firebaseUser.getIdTokenResult();
-      const role = tokenResult.claims.role || 'normal';
+      const role = tokenResult.claims.role === 'normal' ? 'mht_operator' : (tokenResult.claims.role || 'mht_operator');
       _isAdmin = role === 'admin';
 
       _activeUser = {
@@ -59,12 +59,13 @@ export function clearUser() {
 // ── Role helpers ──────────────────────────────────────────────────────────────
 
 export function normalizeRole(role) {
-  if (!role || typeof role !== 'string') return 'normal';
+  if (!role || typeof role !== 'string') return 'mht_operator';
   const r = role.toLowerCase().trim();
-  if (r === 'admin' || r === 'yönetici')                              return 'admin';
-  if (r === 'wms'   || r === 'wms_operator' || r === 'wms operatör') return 'wms';
-  if (r === 'guest' || r === 'konuk')                                 return 'guest';
-  return 'normal';
+  if (r === 'admin' || r === 'yönetici')                                               return 'admin';
+  if (r === 'wms'   || r === 'wms_operator' || r === 'wms operatör')                  return 'wms';
+  if (r === 'mht_operator' || r === 'mht operatör' || r === 'normal')                 return 'mht_operator';
+  if (r === 'guest' || r === 'konuk')                                                  return 'guest';
+  return 'mht_operator';
 }
 
 /**

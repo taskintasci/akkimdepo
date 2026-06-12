@@ -118,7 +118,7 @@ function _renderStep2(user) {
 
   // Çıkış
   ROOT.querySelector('#btn-logout')?.addEventListener('click', () => {
-    clearUser();
+    _showConfirmDialog('Çıkış yapmak istediğinize emin misiniz?', () => clearUser());
   });
 
   // Aylık özet
@@ -185,7 +185,7 @@ function _renderPersonelStep(user) {
         <div class="field">
           <label class="field__label" for="new-person-role">Rol</label>
           <select class="field__input" id="new-person-role">
-            <option value="normal">Normal</option>
+            <option value="mht_operator">MHT Operatör</option>
             <option value="wms">WMS Operatör</option>
             <option value="admin">Admin</option>
           </select>
@@ -229,9 +229,9 @@ function _renderPersonList() {
         <input class="field__input" type="text"  value="${_esc(p.name)}"        placeholder="Ad Soyad"           id="pename-${p.id}"/>
         <input class="field__input" type="email" value="${_esc(p.email||'')}"   placeholder="E-posta"             id="pemail-${p.id}"/>
         <select class="field__input" id="perole-${p.id}">
-          <option value="normal" ${p.role==='normal'?'selected':''}>Normal</option>
-          <option value="wms"    ${p.role==='wms'?'selected':''}>WMS Operatör</option>
-          <option value="admin"  ${p.role==='admin'?'selected':''}>Admin</option>
+          <option value="mht_operator" ${(p.role==='mht_operator'||p.role==='normal')?'selected':''}>MHT Operatör</option>
+          <option value="wms"         ${p.role==='wms'?'selected':''}>WMS Operatör</option>
+          <option value="admin"       ${p.role==='admin'?'selected':''}>Admin</option>
         </select>
       </div>
       <div id="pactions-${p.id}" style="display:flex;gap:var(--space-1);flex-shrink:0;">
@@ -294,7 +294,7 @@ async function _addPerson() {
   const name     = nameEl.value.trim();
   const email    = emailEl.value.trim();
   const password = pwEl.value;
-  const role     = roleEl.value || 'normal';
+  const role     = roleEl.value || 'mht_operator';
 
   if (!name || !email || !password) {
     errEl.textContent = 'Ad, e-posta ve şifre zorunludur.';
@@ -315,7 +315,7 @@ async function _addPerson() {
     nameEl.value  = '';
     emailEl.value = '';
     pwEl.value    = '';
-    roleEl.value  = 'normal';
+    roleEl.value  = 'mht_operator';
     _persons = await import('../../core/storage.js').then(m => m.loadPersons());
     _renderPersonList();
     window.App?.showToast({ title: `${name} eklendi`, type: 'success' });
@@ -348,10 +348,20 @@ async function _savePerson(id) {
   const saveBtn = ROOT.querySelector(`[data-save-pid="${id}"]`);
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
 
+  const person = _persons.find(x => x.id === id || x.uid === id);
+  const hasAuthAccount = !!(person?.uid);
+
   try {
-    await fnUpdateUser({ uid: id, name, email, role });
-    const p = _persons.find(x => x.id === id || x.uid === id);
-    if (p) { p.name = name; p.email = email || ''; p.role = role; }
+    if (hasAuthAccount) {
+      // Firebase Auth kullanıcısı — Cloud Function ile güncelle
+      await fnUpdateUser({ uid: person.uid, name, email, role });
+    } else {
+      // Eski kullanıcı — sadece Firestore'u güncelle
+      if (person) { person.name = name; person.email = email || ''; person.role = role; }
+      await import('../../core/storage.js').then(m =>
+        m.savePersons(JSON.parse(JSON.stringify(_persons))));
+    }
+    if (person) { person.name = name; person.email = email || ''; person.role = role; }
     _renderPersonList();
     window.App?.showToast({ title: 'Kaydedildi', type: 'success' });
   } catch (err) {
@@ -563,7 +573,7 @@ function _showConfirmDialog(message, onConfirm) {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function _roleLabel(role) {
-  const MAP = { admin: 'Admin', wms: 'WMS Operatör', normal: 'Normal', guest: 'Misafir' };
+  const MAP = { admin: 'Admin', wms: 'WMS Operatör', mht_operator: 'MHT Operatör', normal: 'MHT Operatör', guest: 'Misafir' };
   return MAP[role] || role;
 }
 
