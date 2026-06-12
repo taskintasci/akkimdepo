@@ -52,6 +52,12 @@ function _renderStep2(user) {
 
   ROOT.innerHTML = `
     <div class="launcher animate-fade-in">
+      <button class="btn btn--icon btn--ghost launcher-theme-btn" id="launcher-btn-theme" type="button" aria-label="Temayı değiştir">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="launcher-theme-icon">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+
       <div class="launcher__brand">
         <div class="launcher__logo">
           <span class="launcher__logo-akkim">Akkim</span>
@@ -121,6 +127,14 @@ function _renderStep2(user) {
   ROOT.querySelectorAll('.app-card').forEach(card => {
     card.addEventListener('click', () => goToApp(card.dataset.view));
   });
+
+  // Tema
+  ROOT.querySelector('#launcher-btn-theme')?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('akkim-theme', isDark ? 'dark' : 'light');
+    _syncLauncherThemeIcon();
+  });
+  _syncLauncherThemeIcon();
 
   // Şifre değiştir
   ROOT.querySelector('#btn-change-password')?.addEventListener('click', async () => {
@@ -410,6 +424,15 @@ function _cancelEditPerson(id) {
   ROOT.querySelector(`#pedit-${id}`)?.toggleAttribute('hidden', true);
   ROOT.querySelector(`#pactions-${id}`)?.toggleAttribute('hidden', false);
   ROOT.querySelector(`#psave-${id}`)?.toggleAttribute('hidden', true);
+}
+
+function _syncLauncherThemeIcon() {
+  const isDark = document.documentElement.classList.contains('dark');
+  const icon = ROOT.querySelector('#launcher-theme-icon');
+  if (!icon) return;
+  icon.innerHTML = isDark
+    ? '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
 }
 
 function _movePerson(id, dir) {
