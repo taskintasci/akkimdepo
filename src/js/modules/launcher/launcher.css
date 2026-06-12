@@ -350,17 +350,39 @@
 
 /* ── Responsive ───────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
+  .launcher {
+    padding: var(--space-5) var(--space-4);
+  }
+
   .app-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-3);
+    gap: var(--space-2);
   }
 
   .app-card {
-    padding: var(--space-4) var(--space-3);
+    padding: var(--space-3) var(--space-2);
   }
 
   .app-card__icon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .app-card__title {
+    font-size: var(--text-xs);
+  }
+
+  .launcher__user-row {
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .launcher__user-info > div > div:last-child {
+    display: none;
+  }
+
+  .launcher-theme-btn {
+    top: var(--space-3);
+    right: var(--space-3);
   }
 }
