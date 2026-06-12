@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <meta name="description" content="Akkim İthalat ve İhracat Planı" />
+  <title>Akkim İthalat ve İhracat Planı</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+
+  <!-- Dark mode init — must run before CSS to avoid flash -->
+  <script>
+    (function () {
+      var stored = localStorage.getItem('akkim-theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Design Tokens + Reset -->
+  <link rel="stylesheet" href="src/styles/tokens.css" />
+  <link rel="stylesheet" href="src/styles/reset.css" />
+  <link rel="stylesheet" href="src/styles/typography.css" />
+  <link rel="stylesheet" href="src/styles/layout.css" />
+  <link rel="stylesheet" href="src/styles/animations.css" />
+
+  <!-- Components -->
+  <link rel="stylesheet" href="src/styles/components/button.css" />
+  <link rel="stylesheet" href="src/styles/components/card.css" />
+  <link rel="stylesheet" href="src/styles/components/chip.css" />
+  <link rel="stylesheet" href="src/styles/components/badge.css" />
+  <link rel="stylesheet" href="src/styles/components/modal.css" />
+  <link rel="stylesheet" href="src/styles/components/form.css" />
+  <link rel="stylesheet" href="src/styles/components/avatar.css" />
+  <link rel="stylesheet" href="src/styles/components/toast.css" />
+  <link rel="stylesheet" href="src/styles/components/table.css" />
+  <link rel="stylesheet" href="src/styles/components/calendar.css" />
+  <link rel="stylesheet" href="src/styles/components/tag.css" />
+  <link rel="stylesheet" href="src/styles/components/toggle.css" />
+
+  <!-- Module CSS -->
+  <link rel="stylesheet" href="src/js/modules/auth/login.css" />
+  <link rel="stylesheet" href="src/js/modules/launcher/launcher.css" />
+  <link rel="stylesheet" href="src/js/modules/randevu/randevu.css" />
+  <link rel="stylesheet" href="src/js/modules/haftalik/haftalik.css" />
+  <link rel="stylesheet" href="src/js/modules/teyit/teyit.css" />
+
+  <!-- Dark Mode Overrides (must be last to win specificity) -->
+  <link rel="stylesheet" href="src/styles/dark.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ── Login Screen ───────────────────────────────────────────────────── -->
+    <main class="screen" id="screen-login" role="main">
+      <div id="login-root"></div>
+    </main>
+
+    <!-- ── Launcher Screen ───────────────────────────────────────────────── -->
+    <main class="screen" id="screen-launcher" role="main" hidden>
+      <div id="launcher-root"></div>
+    </main>
+
+    <!-- ── App Header (only visible in app screen) ───────────────────────── -->
+    <header class="app-header" id="app-header" hidden>
+      <div class="app-header__main">
+        <button class="app-header__logo" id="btn-home" type="button" aria-label="Ana sayfaya dön">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+            <rect width="28" height="28" rx="8" fill="var(--color-accent)"/>
+            <rect x="7" y="7" width="6" height="6" rx="1.5" fill="white"/>
+            <rect x="15" y="7" width="6" height="6" rx="1.5" fill="white" opacity="0.6"/>
+            <rect x="7" y="15" width="6" height="6" rx="1.5" fill="white" opacity="0.6"/>
+            <rect x="15" y="15" width="6" height="6" rx="1.5" fill="white" opacity="0.3"/>
+          </svg>
+        </button>
+
+        <!-- Nav tabs (desktop) -->
+        <nav class="segment-control" id="app-nav" aria-label="Uygulama menüsü">
+          <button class="segment-control__btn" data-view="randevu" type="button" aria-label="Randevu">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <rect x="2" y="2" width="12" height="12" rx="2"/>
+              <path d="M5 1v2M11 1v2M2 6h12"/>
+            </svg>
+            <span>Randevu</span>
+          </button>
+          <button class="segment-control__btn" data-view="haftalik" type="button" aria-label="Haftalık Plan">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <rect x="2" y="2" width="12" height="12" rx="2"/>
+              <path d="M2 6h12M6 2v12M10 2v12" opacity=".5"/>
+            </svg>
+            <span>Haftalık Plan</span>
+          </button>
+          <button class="segment-control__btn" data-view="teyit" type="button" aria-label="Günlük Teyit">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M13 4.5L6.5 11 3 7.5"/>
+              <circle cx="8" cy="8" r="6"/>
+            </svg>
+            <span>Günlük Teyit</span>
+          </button>
+        </nav>
+
+        <div class="app-header__spacer"></div>
+
+        <!-- Theme toggle -->
+        <button class="btn btn--icon btn--ghost" id="btn-theme" type="button" aria-label="Karanlık moda geç" title="Karanlık moda geç">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <!-- User chip -->
+        <div class="app-header__user" id="header-user" style="cursor:pointer"></div>
+      </div>
+
+      <!-- Toolbar portals -->
+      <div id="haftalik-toolbar-portal" class="header-portal" style="display: none;"></div>
+      <div id="teyit-toolbar-portal"    class="header-portal" style="display: none;"></div>
+    </header>
+
+    <!-- ── App Screen (Randevu / Haftalık / Teyit) ────────────────────────── -->
+    <main class="screen" id="screen-app" hidden role="main">
+      <nav class="mobile-nav hide-desktop" id="mobile-nav" aria-label="Uygulama menüsü"></nav>
+
+      <div id="view-randevu" hidden></div>
+      <div id="view-haftalik" hidden></div>
+      <div id="view-teyit" hidden></div>
+    </main>
+
+    <!-- ── Toast Container ──────────────────────────────────────────────────── -->
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  </div><!-- /#app -->
+
+  <!-- SheetJS — Excel export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase SDK (compat — CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
+  <!-- App Entry -->
+  <script type="module" src="src/js/core/firebase.js"></script>
+  <script type="module" src="src/js/app.js"></script>
+</body>
+</html>

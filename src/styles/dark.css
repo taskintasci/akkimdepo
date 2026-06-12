@@ -1,0 +1,336 @@
+/* ─── Dark Mode Component Overrides ────────────────────────────────────────── */
+/*
+ * Tüm primitive renk (gray-50/100/200, amber-50, indigo-50, vb.) kullanan
+ * component ve modül stillerinin dark mode düzeltmeleri burada toplanır.
+ * tokens.css'deki semantic token override'ları ayrıdır; bu dosya onları tamamlar.
+ */
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SEGMENT CONTROL (Header nav tabs)
+   Light modda: container=açık, active=daha açık (beyaz), hover=gri
+   Dark modda hiyerarşi tersine döner: container=en koyu, active=orta, hover=en açık
+══════════════════════════════════════════════════════════════════════════════ */
+
+html.dark .segment-control {
+  background: var(--color-bg);       /* #0f172a — en koyu, taban */
+  border-color: var(--color-border);
+}
+
+html.dark .segment-control__btn:hover {
+  background: var(--color-surface);  /* #1e293b — hafif ışıma */
+  color: var(--color-text);
+}
+
+html.dark .segment-control__btn.is-active {
+  background: var(--color-surface-hover); /* #334155 — belirgin aktif pill */
+  color: var(--color-accent);
+  box-shadow: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   HAFTALIK PLAN
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Tablo başlığı ────────────────────────────────────────────────────────── */
+html.dark .haftalik-table th,
+html.dark .haftalik-table th:first-child {
+  background: var(--color-surface);
+}
+
+html.dark .th-holiday {
+  background: rgba(251, 191, 36, 0.08) !important;
+  color: #fbbf24 !important;
+}
+
+html.dark .th-arife {
+  background: rgba(251, 146, 60, 0.08) !important;
+  color: #fb923c !important;
+}
+
+/* ── Tablo hücre kenarlıkları ─────────────────────────────────────────────── */
+html.dark .haftalik-table tbody tr {
+  border-bottom-color: var(--color-border);
+}
+
+html.dark .haftalik-table td {
+  border-right-color: var(--color-border);
+}
+
+html.dark .haftalik-table tbody td:not(.name-cell):hover {
+  background: var(--color-surface-hover);
+}
+
+/* ── Tatil günü sütunu ────────────────────────────────────────────────────── */
+html.dark .day-cell.col-holiday {
+  background: rgba(251, 191, 36, 0.08) !important;
+}
+
+html.dark .day-cell.col-holiday:hover {
+  background: rgba(251, 191, 36, 0.15) !important;
+}
+
+html.dark .day-cell.col-arife {
+  background: rgba(251, 146, 60, 0.08) !important;
+}
+
+html.dark .day-cell.col-arife:hover {
+  background: rgba(251, 146, 60, 0.15) !important;
+}
+
+/* ── Entry chip — "Diğer" tipi ────────────────────────────────────────────── */
+html.dark .entry-chip.other {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* ── Entry chip — IMO'lu (turuncu) renk yoğunluğu seviyeleri ─────────────── */
+html.dark .entry-chip.imo.count-level-1 { background: rgba(251,146,60,0.08);  border-color: rgba(251,146,60,0.16); }
+html.dark .entry-chip.imo.count-level-2 { background: rgba(251,146,60,0.15);  border-color: rgba(251,146,60,0.26); }
+html.dark .entry-chip.imo.count-level-3 { background: rgba(251,146,60,0.24);  border-color: rgba(251,146,60,0.38); }
+html.dark .entry-chip.imo.count-level-4 { background: rgba(251,146,60,0.38);  border-color: rgba(251,146,60,0.55); }
+html.dark .entry-chip.imo.count-level-5 { background: rgba(251,146,60,0.52);  border-color: rgba(251,146,60,0.70); }
+
+/* ── Entry chip — IMO'suz (yeşil) renk yoğunluğu seviyeleri ─────────────── */
+html.dark .entry-chip.imosuz.count-level-1 { background: rgba(74,222,128,0.08);  border-color: rgba(74,222,128,0.16); }
+html.dark .entry-chip.imosuz.count-level-2 { background: rgba(74,222,128,0.15);  border-color: rgba(74,222,128,0.26); }
+html.dark .entry-chip.imosuz.count-level-3 { background: rgba(74,222,128,0.24);  border-color: rgba(74,222,128,0.38); }
+html.dark .entry-chip.imosuz.count-level-4 { background: rgba(74,222,128,0.38);  border-color: rgba(74,222,128,0.55); }
+html.dark .entry-chip.imosuz.count-level-5 { background: rgba(74,222,128,0.52);  border-color: rgba(74,222,128,0.70); }
+
+/* ── Entry chip — İthalat (mor) renk yoğunluğu seviyeleri ───────────────── */
+html.dark .entry-chip.ithalat.count-level-1 { background: rgba(167,139,250,0.08);  border-color: rgba(167,139,250,0.16); }
+html.dark .entry-chip.ithalat.count-level-2 { background: rgba(167,139,250,0.15);  border-color: rgba(167,139,250,0.26); }
+html.dark .entry-chip.ithalat.count-level-3 { background: rgba(167,139,250,0.24);  border-color: rgba(167,139,250,0.38); }
+html.dark .entry-chip.ithalat.count-level-4 { background: rgba(167,139,250,0.38);  border-color: rgba(167,139,250,0.55); }
+html.dark .entry-chip.ithalat.count-level-5 { background: rgba(167,139,250,0.52);  border-color: rgba(167,139,250,0.70); }
+
+/* ── Diğer (gri) renk seviyeleri ─────────────────────────────────────────── */
+html.dark .entry-chip.other.count-level-1 { background: rgba(148,163,184,0.08);  border-color: rgba(148,163,184,0.15); }
+html.dark .entry-chip.other.count-level-2 { background: rgba(148,163,184,0.14);  border-color: rgba(148,163,184,0.24); }
+html.dark .entry-chip.other.count-level-3 { background: rgba(148,163,184,0.22);  border-color: rgba(148,163,184,0.36); }
+html.dark .entry-chip.other.count-level-4 { background: rgba(148,163,184,0.34);  border-color: rgba(148,163,184,0.50); }
+html.dark .entry-chip.other.count-level-5 { background: rgba(148,163,184,0.48);  border-color: rgba(148,163,184,0.65); }
+
+/* Koyu seviyelerde metin rengi zaten --color-text (açık) olduğu için sorun yok. */
+html.dark .entry-chip.count-level-4 .chip-count,
+html.dark .entry-chip.count-level-4 .chip-firma,
+html.dark .entry-chip.count-level-4 .chip-urun,
+html.dark .entry-chip.count-level-4 .chip-desc,
+html.dark .entry-chip.count-level-5 .chip-count,
+html.dark .entry-chip.count-level-5 .chip-firma,
+html.dark .entry-chip.count-level-5 .chip-urun,
+html.dark .entry-chip.count-level-5 .chip-desc { color: var(--color-text); }
+
+/* ── Toplam satırı ────────────────────────────────────────────────────────── */
+html.dark .haftalik-table .total-row td {
+  background: var(--color-surface);
+}
+
+/* ── Notlar etiketi ───────────────────────────────────────────────────────── */
+html.dark .notes-label {
+  background: var(--color-surface);
+}
+
+/* ── Aylık modal tablosu ──────────────────────────────────────────────────── */
+html.dark .monthly-table td {
+  border-bottom-color: var(--color-border);
+}
+
+html.dark .monthly-table tbody tr:last-child td {
+  background: var(--color-surface);
+}
+
+/* ── Personel listesi hover ───────────────────────────────────────────────── */
+html.dark .person-item:hover {
+  background: var(--color-surface-hover);
+}
+
+/* ── Tip seçici — "Diğer" butonu ─────────────────────────────────────────── */
+html.dark .type-opt.sel-other {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+/* ── "+ ekle" butonu ─────────────────────────────────────────────────────── */
+html.dark .add-entry-btn {
+  border-color: var(--color-border);
+}
+
+/* ── Chip önizleme popup kapat butonu ────────────────────────────────────── */
+html.dark .chip-preview__close:hover {
+  background: var(--color-surface-hover);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   GÜNLÜK TEYİT
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── İstatistik chip'leri ─────────────────────────────────────────────────── */
+html.dark .teyit-stat--total {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  border-color: var(--color-border);
+}
+
+html.dark .teyit-stat--pending {
+  background: rgba(251, 191, 36, 0.10);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+/* ── Araç kartları ────────────────────────────────────────────────────────── */
+html.dark .vehicle-card.is-pending {
+  border-color: rgba(251, 191, 36, 0.30);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+html.dark .vehicle-card.is-confirmed {
+  border-color: rgba(129, 140, 248, 0.30);
+  background: rgba(129, 140, 248, 0.06);
+}
+
+/* ── Durum ikonları ───────────────────────────────────────────────────────── */
+html.dark .vehicle-card__status.pending {
+  background: rgba(251, 191, 36, 0.15);
+}
+
+html.dark .vehicle-card__status.confirmed {
+  background: rgba(129, 140, 248, 0.15);
+}
+
+html.dark .vehicle-card__status.processed {
+  background: rgba(74, 222, 128, 0.15);
+}
+
+/* ── Takvim tatil/arife hücreleri ─────────────────────────────────────────── */
+html.dark .teyit-cal-cell.holiday {
+  background: rgba(251, 191, 36, 0.10) !important;
+}
+
+html.dark .teyit-cal-cell.holiday:hover {
+  background: rgba(251, 191, 36, 0.18) !important;
+}
+
+html.dark .teyit-cal-cell.arife {
+  background: rgba(251, 146, 60, 0.10) !important;
+}
+
+html.dark .teyit-cal-cell.arife:hover {
+  background: rgba(251, 146, 60, 0.18) !important;
+}
+
+/* ── Takvim popup hücre hover ─────────────────────────────────────────────── */
+html.dark .teyit-cal-cell:not(.header-cell):not(.empty):not(.wk-label):not(.wk-num):hover {
+  background: var(--color-surface-hover);
+}
+
+/* ── Bölüm ayırıcı çizgiler ──────────────────────────────────────────────── */
+html.dark .teyit-section-div.pending   .teyit-section-div__line { background: rgba(251, 191, 36, 0.30); }
+html.dark .teyit-section-div.confirmed .teyit-section-div__line { background: rgba(129, 140, 248, 0.30); }
+html.dark .teyit-section-div.processed .teyit-section-div__line { background: rgba(74, 222, 128, 0.30); }
+
+/* ── "Bekliyor" rozeti ───────────────────────────────────────────────────── */
+html.dark .teyit-waiting-badge {
+  background: rgba(251, 191, 36, 0.10);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   RANDEVU
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Takvim tatil/arife günleri ──────────────────────────────────────────── */
+html.dark .calendar__day.is-holiday {
+  background-color: rgba(251, 191, 36, 0.10) !important;
+  opacity: 1;
+}
+
+html.dark .calendar__day.is-holiday:hover {
+  background-color: rgba(251, 191, 36, 0.18) !important;
+}
+
+html.dark .calendar__day.is-arife {
+  background-color: rgba(251, 146, 60, 0.10) !important;
+}
+
+html.dark .calendar__day.is-arife:hover {
+  background-color: rgba(251, 146, 60, 0.18) !important;
+}
+
+/* ── Boş slot kartı ───────────────────────────────────────────────────────── */
+html.dark .slot-card--empty {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+html.dark .slot-card--empty:hover {
+  border-color: rgba(129, 140, 248, 0.50);
+  background: rgba(129, 140, 248, 0.06);
+}
+
+html.dark .slot-card--empty.drag-over {
+  background: rgba(129, 140, 248, 0.10);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.25);
+}
+
+/* ── Slot ekleme ikonu ────────────────────────────────────────────────────── */
+html.dark .slot-add-icon {
+  background: rgba(129, 140, 248, 0.15);
+}
+
+/* ── "Haftalık çek" butonu ────────────────────────────────────────────────── */
+html.dark .btn-haftalik-cek {
+  border-color: rgba(129, 140, 248, 0.30);
+}
+
+html.dark .btn-haftalik-cek:hover {
+  background: rgba(129, 140, 248, 0.12);
+  border-color: rgba(129, 140, 248, 0.50);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════════════════════════════════════════ */
+
+html.dark .modal__close:hover {
+  background: var(--color-surface-hover);
+}
+
+/* Mobile sheet drag handle */
+@media (max-width: 640px) {
+  html.dark .modal__header::before {
+    background: var(--color-border);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   FORM
+══════════════════════════════════════════════════════════════════════════════ */
+
+html.dark .toggle__track {
+  background: var(--color-border);
+  border-color: var(--color-border);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   RESET — Seçim rengi
+══════════════════════════════════════════════════════════════════════════════ */
+
+html.dark ::selection {
+  background: rgba(129, 140, 248, 0.30);
+  color: var(--color-text);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   KART — stat-card accent kenarlığı
+══════════════════════════════════════════════════════════════════════════════ */
+
+html.dark .stat-card--accent {
+  border-color: rgba(129, 140, 248, 0.30);
+}

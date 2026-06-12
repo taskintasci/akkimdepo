@@ -1,0 +1,61 @@
+/* ─── Avatar Component ────────────────────────────────────────────────────── */
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: #fff;
+  flex-shrink: 0;
+  user-select: none;
+  background: var(--color-accent);
+  overflow: hidden;
+  position: relative;
+}
+
+.avatar--sm {
+  width: 28px;
+  height: 28px;
+  font-size: var(--text-xs);
+}
+
+.avatar--lg {
+  width: 52px;
+  height: 52px;
+  font-size: var(--text-lg);
+}
+
+.avatar--xl {
+  width: 64px;
+  height: 64px;
+  font-size: var(--text-xl);
+}
+
+/* Color variants — deterministic from name */
+.avatar[data-color="0"] { background: var(--indigo-500); }
+.avatar[data-color="1"] { background: var(--violet-500); }
+.avatar[data-color="2"] { background: var(--orange-500); }
+.avatar[data-color="3"] { background: var(--green-500); }
+.avatar[data-color="4"] { background: #0ea5e9; }  /* sky */
+.avatar[data-color="5"] { background: #ec4899; }  /* pink */
+.avatar[data-color="6"] { background: #14b8a6; }  /* teal */
+.avatar[data-color="7"] { background: #8b5cf6; }  /* purple */
+
+/* ── Avatar Group ─────────────────────────────────────────────────────────── */
+.avatar-group {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-group .avatar {
+  border: 2px solid var(--color-bg);
+  margin-left: -8px;
+}
+
+.avatar-group .avatar:first-child {
+  margin-left: 0;
+}
