@@ -328,7 +328,12 @@ export const deleteAuthUser = onCall(async (request) => {
   const auth = getAuth();
   const db   = getFirestore();
 
-  await auth.deleteUser(uid);
+  // Firebase Auth'ta yoksa (eski Firestore-only kayıt) sessizce geç
+  try {
+    await auth.deleteUser(uid);
+  } catch (e) {
+    if (e.code !== 'auth/user-not-found') throw e;
+  }
 
   const personsRef = db.doc('config/persons');
   const snap = await personsRef.get();
