@@ -118,7 +118,7 @@ function _renderStep2(user) {
 
   // Çıkış
   ROOT.querySelector('#btn-logout')?.addEventListener('click', () => {
-    clearUser();
+    _showConfirmDialog('Çıkış yapmak istediğinize emin misiniz?', () => clearUser());
   });
 
   // Aylık özet
