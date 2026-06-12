@@ -292,7 +292,7 @@ function _assertAdmin(request) {
 export const createAuthUser = onCall(async (request) => {
   _assertAdmin(request);
 
-  const { name, email, password, role = 'normal' } = request.data;
+  const { name, email, password, role = 'mht_operator' } = request.data;
   if (!name || !email || !password)
     throw new HttpsError('invalid-argument', 'Ad, e-posta ve şifre zorunludur.');
 
