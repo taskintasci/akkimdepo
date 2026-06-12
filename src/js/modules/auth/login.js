@@ -128,6 +128,11 @@ function _render() {
           </div>
         </div>
 
+        <!-- Şifremi unuttum linki -->
+        <div style="text-align:right;margin-top:-4px;margin-bottom:4px;">
+          <button class="login-forgot-link" id="btn-forgot-password" type="button">Şifremi unuttum?</button>
+        </div>
+
         <!-- Hata mesajı -->
         <div class="login-error" id="login-error" hidden>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px" aria-hidden="true">
@@ -136,6 +141,14 @@ function _render() {
             <line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           <span id="login-error-text"></span>
+        </div>
+
+        <!-- Başarı mesajı -->
+        <div class="login-success" id="login-success" hidden>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px" aria-hidden="true">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span id="login-success-text"></span>
         </div>
 
         <!-- Submit -->
@@ -176,18 +189,21 @@ function _render() {
 
 // ── Events ────────────────────────────────────────────────────────────────────
 
+let _forgotMode = false;
+
 function _bindEvents() {
   const emailEl    = ROOT.querySelector('#login-email');
   const passwordEl = ROOT.querySelector('#login-password');
   const submitBtn  = ROOT.querySelector('#btn-login-submit');
   const toggleBtn  = ROOT.querySelector('#btn-pw-toggle');
   const themeBtn   = ROOT.querySelector('#login-btn-theme');
+  const forgotBtn  = ROOT.querySelector('#btn-forgot-password');
 
-  submitBtn.addEventListener('click', _doLogin);
+  submitBtn.addEventListener('click', () => _forgotMode ? _doForgot() : _doLogin());
 
   [emailEl, passwordEl].forEach(el => {
     el.addEventListener('keydown', e => {
-      if (e.key === 'Enter') _doLogin();
+      if (e.key === 'Enter') _forgotMode ? _doForgot() : _doLogin();
       _clearError();
     });
     el.addEventListener('input', _clearError);
@@ -208,10 +224,57 @@ function _bindEvents() {
     _syncThemeIcon();
   });
 
+  forgotBtn.addEventListener('click', () => {
+    _forgotMode = !_forgotMode;
+    _clearError();
+    _clearSuccess();
+    const pwField = ROOT.querySelector('#login-password')?.closest('.login-field');
+    const pwToggleRow = ROOT.querySelector('.login-forgot-link')?.closest('div');
+    if (_forgotMode) {
+      if (pwField) pwField.style.display = 'none';
+      forgotBtn.textContent = '← Girişe dön';
+      ROOT.querySelector('#login-form__title, .login-form__title').textContent = 'Şifre Sıfırla';
+      const label = ROOT.querySelector('#login-btn-label');
+      if (label) label.textContent = 'Sıfırlama Maili Gönder';
+      const icon = ROOT.querySelector('#login-btn-icon');
+      if (icon) icon.outerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="login-btn-icon" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>`;
+    } else {
+      if (pwField) pwField.style.display = '';
+      forgotBtn.textContent = 'Şifremi unuttum?';
+      ROOT.querySelector('.login-form__title').textContent = 'Hoş Geldiniz';
+      const label = ROOT.querySelector('#login-btn-label');
+      if (label) label.textContent = 'Sisteme Giriş Yap';
+      const icon = ROOT.querySelector('#login-btn-icon');
+      if (icon) icon.outerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="login-btn-icon" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+    }
+  });
+
   setTimeout(() => emailEl.focus(), 80);
 }
 
 // ── Login logic ───────────────────────────────────────────────────────────────
+
+async function _doForgot() {
+  const emailEl = ROOT.querySelector('#login-email');
+  const email   = emailEl.value.trim();
+
+  if (!email) {
+    _showError('E-posta adresinizi girin.');
+    emailEl.focus();
+    return;
+  }
+
+  _setLoading(true);
+  try {
+    await auth.sendPasswordResetEmail(email);
+    _setLoading(false);
+    _clearError();
+    _showSuccess('Şifre sıfırlama maili gönderildi. Gelen kutunuzu kontrol edin.');
+  } catch (err) {
+    _setLoading(false);
+    _showError(_errMsg(err.code));
+  }
+}
 
 async function _doLogin() {
   const emailEl    = ROOT.querySelector('#login-email');
@@ -265,6 +328,19 @@ function _showError(msg) {
 
 function _clearError() {
   const el = ROOT.querySelector('#login-error');
+  if (el) el.hidden = true;
+}
+
+function _showSuccess(msg) {
+  const el  = ROOT.querySelector('#login-success');
+  const txt = ROOT.querySelector('#login-success-text');
+  if (!el || !txt) return;
+  txt.textContent = msg;
+  el.hidden = false;
+}
+
+function _clearSuccess() {
+  const el = ROOT.querySelector('#login-success');
   if (el) el.hidden = true;
 }
 

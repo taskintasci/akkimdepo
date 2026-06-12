@@ -348,10 +348,20 @@ async function _savePerson(id) {
   const saveBtn = ROOT.querySelector(`[data-save-pid="${id}"]`);
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '…'; }
 
+  const person = _persons.find(x => x.id === id || x.uid === id);
+  const hasAuthAccount = !!(person?.uid);
+
   try {
-    await fnUpdateUser({ uid: id, name, email, role });
-    const p = _persons.find(x => x.id === id || x.uid === id);
-    if (p) { p.name = name; p.email = email || ''; p.role = role; }
+    if (hasAuthAccount) {
+      // Firebase Auth kullanıcısı — Cloud Function ile güncelle
+      await fnUpdateUser({ uid: person.uid, name, email, role });
+    } else {
+      // Eski kullanıcı — sadece Firestore'u güncelle
+      if (person) { person.name = name; person.email = email || ''; person.role = role; }
+      await import('../../core/storage.js').then(m =>
+        m.savePersons(JSON.parse(JSON.stringify(_persons))));
+    }
+    if (person) { person.name = name; person.email = email || ''; person.role = role; }
     _renderPersonList();
     window.App?.showToast({ title: 'Kaydedildi', type: 'success' });
   } catch (err) {
