@@ -7,6 +7,7 @@
 
 import { auth } from './firebase.js';
 import { emit } from './events.js';
+import { stopAllListeners } from './storage.js';
 
 let _activeUser = null;
 let _isAdmin    = false;
@@ -53,6 +54,7 @@ export function getIsAdminSession()  { return _isAdmin; }
 // ── Sign out ──────────────────────────────────────────────────────────────────
 
 export function clearUser() {
+  stopAllListeners();
   auth.signOut();
 }
 
