@@ -974,8 +974,7 @@ function _bookingsFor(dateStr) {
 function _canEdit() {
   const user = getActiveUser();
   if (!user) return false;
-  
-  // Tüm kullanıcılar kendi işlemlerini yapabilir
+  if (user.role === 'guest') return false;
   return true;
 }
 

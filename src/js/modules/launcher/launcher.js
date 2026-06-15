@@ -207,20 +207,21 @@ function _renderPersonelStep(user) {
           <input class="field__input" type="text" id="new-person-name" placeholder="Ad Soyad" autocomplete="off"/>
         </div>
         <div class="field">
-          <label class="field__label required" for="new-person-email">E-posta</label>
-          <input class="field__input" type="email" id="new-person-email" placeholder="isim@akkim.com.tr" autocomplete="off"/>
-        </div>
-        <div class="field">
-          <label class="field__label required" for="new-person-password">Geçici Şifre</label>
-          <input class="field__input" type="password" id="new-person-password" placeholder="En az 6 karakter" autocomplete="new-password"/>
-        </div>
-        <div class="field">
           <label class="field__label" for="new-person-role">Rol</label>
           <select class="field__input" id="new-person-role">
             <option value="mht_operator">MHT Operatör</option>
             <option value="wms">WMS Operatör</option>
             <option value="admin">Admin</option>
+            <option value="guest">Misafir (Sadece Görüntüleme)</option>
           </select>
+        </div>
+        <div class="field" id="field-email">
+          <label class="field__label required" for="new-person-email">E-posta</label>
+          <input class="field__input" type="email" id="new-person-email" placeholder="isim@akkim.com.tr" autocomplete="off"/>
+        </div>
+        <div class="field" id="field-password">
+          <label class="field__label required" for="new-person-password">Geçici Şifre</label>
+          <input class="field__input" type="password" id="new-person-password" placeholder="En az 6 karakter" autocomplete="new-password"/>
         </div>
       </div>
       <button class="btn btn--primary" id="btn-person-add" type="button" style="width:100%;">
@@ -264,6 +265,7 @@ function _renderPersonList() {
           <option value="mht_operator" ${(p.role==='mht_operator'||p.role==='normal')?'selected':''}>MHT Operatör</option>
           <option value="wms"         ${p.role==='wms'?'selected':''}>WMS Operatör</option>
           <option value="admin"       ${p.role==='admin'?'selected':''}>Admin</option>
+          <option value="guest"       ${p.role==='guest'?'selected':''}>Misafir</option>
         </select>
       </div>
       <div id="pactions-${p.id}" style="display:flex;gap:var(--space-1);flex-shrink:0;">
