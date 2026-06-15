@@ -986,8 +986,9 @@ function _renderMonthlyTable() {
 
   const types = ['imo','imosuz','ithalat','other'];
   const typeLabels = ["IMO'lu","IMO'suz","İthalat","Diğer"];
+  const mhtPersons = _persons.filter(p => p.role === 'mht_operator' || p.role === 'normal');
   const totals = {};
-  _persons.forEach(p => { totals[p.id] = { imo:0, imosuz:0, ithalat:0, other:0 }; });
+  mhtPersons.forEach(p => { totals[p.id] = { imo:0, imosuz:0, ithalat:0, other:0 }; });
 
   // Tüm haftalardaki verileri tara
   Object.entries(_data).forEach(([wk, wkData]) => {
@@ -996,7 +997,7 @@ function _renderMonthlyTable() {
       const dd = new Date(monday);
       dd.setDate(dd.getDate() + di);
       if (dd.getFullYear() === _monthlyYear && dd.getMonth() === _monthlyMonth) {
-        _persons.forEach(p => {
+        mhtPersons.forEach(p => {
           (wkData[`${p.id}_${di}`] || []).forEach(e => {
             if (e.type && totals[p.id]) {
               totals[p.id][e.type] = (totals[p.id][e.type] || 0) + (parseInt(e.count) || 0);
@@ -1009,7 +1010,7 @@ function _renderMonthlyTable() {
 
   const grandTotal = { imo:0, imosuz:0, ithalat:0, other:0 };
 
-  const rows = _persons.map(p => {
+  const rows = mhtPersons.map(p => {
     const row = totals[p.id] || {};
     const pTotal = types.reduce((s, t) => s + (row[t]||0), 0);
     types.forEach(t => { grandTotal[t] = (grandTotal[t]||0) + (row[t]||0); });
