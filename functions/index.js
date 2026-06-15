@@ -229,7 +229,7 @@ export const teyitBildirimi = onDocumentWritten('teyit/{date}', async (event) =>
   const personsList = personsSnap.data()?.list || [];
 
   const allRecipients = personsList
-    .filter(p => p.email && p.email.includes('@'))
+    .filter(p => p.email && p.email.includes('@') && p.role !== 'guest')
     .map(p => `"${p.name}" <${p.email}>`);
 
   const smtpSnap = await db.doc('config/smtp').get();
