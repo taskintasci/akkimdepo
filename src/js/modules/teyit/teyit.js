@@ -891,12 +891,9 @@ function _haftalikCek() {
 }
 
 function _doldurEntry(entry) {
-  if (!ROOT.querySelector('#t-firma')?.value.trim() && entry.firma)
-    _setField('t-firma', entry.firma);
-  if (!ROOT.querySelector('#t-urun')?.value.trim() && entry.urun)
-    _setField('t-urun', entry.urun);
-  if (!ROOT.querySelector('#t-not')?.value.trim() && entry.desc)
-    _setField('t-not', entry.desc);
+  if (entry.firma) _setField('t-firma', entry.firma);
+  if (entry.urun)  _setField('t-urun',  entry.urun);
+  if (entry.desc)  _setField('t-not',   entry.desc);
   if (entry.pinned) {
     const cutoff = ROOT.querySelector('#t-cutoff');
     if (cutoff) {
