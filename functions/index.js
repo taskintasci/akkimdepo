@@ -204,7 +204,7 @@ function buildHtmlTeyit(dateStr, araclar) {
 
 // ── Teyit bildirimi ───────────────────────────────────────────────────────────
 
-export const teyitBildirimi = onDocumentWritten('teyit/{date}', async (event) => {
+export const teyitBildirimi = onDocumentWritten({ document: 'teyit/{date}', region: 'europe-west1' }, async (event) => {
   const before = event.data.before?.exists ? event.data.before.data() : null;
   const after  = event.data.after?.exists  ? event.data.after.data()  : null;
 
@@ -289,7 +289,7 @@ function _assertAdmin(request) {
     throw new HttpsError('permission-denied', 'Bu işlem için admin yetkisi gereklidir.');
 }
 
-export const createAuthUser = onCall(async (request) => {
+export const createAuthUser = onCall({ region: 'europe-west1' }, async (request) => {
   _assertAdmin(request);
 
   const { name, email, password, role = 'mht_operator' } = request.data;
@@ -319,7 +319,7 @@ export const createAuthUser = onCall(async (request) => {
   return { uid: userRecord.uid };
 });
 
-export const deleteAuthUser = onCall(async (request) => {
+export const deleteAuthUser = onCall({ region: 'europe-west1' }, async (request) => {
   _assertAdmin(request);
 
   const { uid } = request.data;
@@ -343,7 +343,7 @@ export const deleteAuthUser = onCall(async (request) => {
   return { success: true };
 });
 
-export const updateAuthUser = onCall(async (request) => {
+export const updateAuthUser = onCall({ region: 'europe-west1' }, async (request) => {
   _assertAdmin(request);
 
   const { uid, name, email, role } = request.data;
@@ -373,7 +373,7 @@ export const updateAuthUser = onCall(async (request) => {
   return { success: true };
 });
 
-export const sendPasswordReset = onCall(async (request) => {
+export const sendPasswordReset = onCall({ region: 'europe-west1' }, async (request) => {
   _assertAdmin(request);
 
   const { email } = request.data;
